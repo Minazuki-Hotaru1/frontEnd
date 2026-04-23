@@ -22,7 +22,7 @@
         <el-amap-marker
           v-for="item in addressList"
           :key="item.id"
-          :position="[Number(item.latitude), Number(item.longitude)]"
+          :position="[Number(item.longitude), Number(item.latitude)]"
           anchor="bottom-center"
           :offset="[0, -10]"
           :top-when-click="true"
@@ -80,7 +80,6 @@ const getAddress = async () => {
   try {
     const res = await request.get("/getAddress")
     addressList.value = res.data ?? []
-    console.log(addressList.value);
     
   } catch {
     ElMessage.error("地图点位数据获取失败")

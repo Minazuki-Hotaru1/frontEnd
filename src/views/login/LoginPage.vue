@@ -41,8 +41,8 @@
         <el-form-item label="密码" :label-width="formLabelWidth">
           <el-input v-model="form.password" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="具体住址" :label-width="formLabelWidth">
-          <el-input v-model="form.address" autocomplete="off" />
+        <el-form-item label="具体住址" :label-width="formLabelWidth"> 
+          <el-input v-model="form.address" autocomplete="off" placeholder="请输入真实的具体住址" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -161,7 +161,7 @@ const userRegister = async () => {
     })
 
     if (res.data.success) {
-      ElMessage.success("账号注册成功")
+      ElMessage.success(res.data.message)
       dialogFormVisible.value = false
       return
     }
