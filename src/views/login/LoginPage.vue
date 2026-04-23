@@ -66,11 +66,13 @@
 import { reactive, ref } from "vue"
 import { ElMessage } from "element-plus"
 import { useRouter } from "vue-router"
+import { useAuthStore } from '../../stores/useAuthStore'
 import request from "../../utils/request"
 
 const username = ref("")
 const password = ref("")
 const router = useRouter()
+const authStore = useAuthStore()
 
 const dialogFormVisible = ref(false)
 const formLabelWidth = '140px'
@@ -119,15 +121,21 @@ const handleSubmit = async () => {
     })
 
     if (res.data.success) {
-      localStorage.setItem("token", res.data.token)
-      localStorage.setItem("username", res.data.username)
+      authStore.setAuthData(
+        res.data.token,
+        res.data.username,
+        String(res.data.id ?? res.data.adminId ?? res.data.enterpriseId ?? "")
+      )
       ElMessage.success("登录成功")
       switch (form.region) {
         case 'user1':
           router.push("/admin")
           return
         case 'user2':
-          router.push("/home")
+          router.push("/enterprise")
+          return
+        case 'user3':
+          router.push("/user")
           return
       }
     }

@@ -1,4 +1,6 @@
 import axios from "axios"
+import pinia from "../stores"
+import { useAuthStore } from "../stores/useAuthStore"
 
 const request = axios.create({
   baseURL: "http://localhost:8081/city",
@@ -6,7 +8,8 @@ const request = axios.create({
 })
 
 request.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token")
+  const authStore = useAuthStore(pinia)
+  const token = authStore.token
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`

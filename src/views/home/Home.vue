@@ -10,10 +10,12 @@
 import { ElMessage } from "element-plus"
 import { onMounted, ref } from "vue"
 import { useRouter } from "vue-router"
+import { useAuthStore } from "../../stores/useAuthStore"
 import request from "../../utils/request"
 
 const username = ref("")
 const router = useRouter()
+const authStore = useAuthStore()
 
 const loadProfile = async () => {
   try {
@@ -21,20 +23,19 @@ const loadProfile = async () => {
     username.value = res.data.username
   } catch {
     ElMessage.error("登录状态已失效，请重新登录")
-    localStorage.removeItem("token")
-    localStorage.removeItem("username")
+    authStore.clearAuthData()
     router.push("/")
   }
 }
 
 const logout = () => {
-  localStorage.removeItem("token")
-  localStorage.removeItem("username")
+  authStore.clearAuthData()
   ElMessage.success("已退出登录")
   router.push("/")
 }
 
 onMounted(() => {
+  username.value = authStore.username ?? ""
   void loadProfile()
 })
 </script>
