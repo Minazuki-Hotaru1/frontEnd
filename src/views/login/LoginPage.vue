@@ -124,7 +124,7 @@ const handleSubmit = async () => {
       authStore.setAuthData(
         res.data.token,
         res.data.username,
-        String(res.data.id ?? res.data.adminId ?? res.data.enterpriseId ?? "")
+        res.data.ID
       )
       ElMessage.success("登录成功")
       switch (form.region) {

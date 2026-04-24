@@ -15,7 +15,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue"
+import { onMounted, ref } from "vue"
 import { ElMessage } from "element-plus"
 import { useAuthStore } from "../../stores/useAuthStore"
 import { useRouter } from "vue-router"
@@ -27,10 +27,16 @@ const activeMenu = ref("appointmentUser")
 const authStore = useAuthStore()
 
 const logout = () =>{
-  authStore.clearAuthData()
-  ElMessage.success("登出成功")
-  router.push("/")
+  console.log(authStore.id);
+  
+  
+  // authStore.clearAuthData()
+  // ElMessage.success("登出成功")
+  // router.push("/")
 }
+
+onMounted(() => {
+})
 
 </script>
 
