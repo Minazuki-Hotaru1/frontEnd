@@ -2,29 +2,57 @@
   <div class="admin-home">
     <aside class="sidebar">
       <div class="sidebar-title">Admin Panel</div>
-      <el-menu
-        :default-active="activeMenu"
-        class="menu"
-        @select="handleSelect"
-      >
+      <el-menu :default-active="activeMenu" class="menu" @select="handleSelect">
+        <!-- 企业 -->
+         <el-sub-menu index="1">
+          <template #title>
+            <el-icon>
+            <IconMenu />
+          </el-icon>
+            <span>企业用户操作</span>
+          </template>
         <el-menu-item index="adminPassEnterprise">
-          <el-icon><Document /></el-icon>
-          <span>Pending Enterprises</span>
+          <el-icon>
+            <Document />
+          </el-icon>
+          <span>企业用户审核</span>
         </el-menu-item>
         <el-menu-item index="adminEnterprise">
-          <el-icon><IconMenu /></el-icon>
-          <span>Approved Enterprises</span>
+          <el-icon><Finished /></el-icon>
+          
+          <span>已注册企业信息查看</span>
         </el-menu-item>
-        <el-menu-item index="map">
-          <el-icon><Location /></el-icon>
-          <span>Map</span>
+        <el-menu-item index="map1">
+          <el-icon>
+            <Location />
+          </el-icon>
+          <span>已注册企业地图分布点位</span>
         </el-menu-item>
-        <el-menu-item index="role">
-          <el-icon><Setting /></el-icon>
-          <span>Role</span>
+        </el-sub-menu>
+
+        <!-- 普通用户 -->
+         <el-sub-menu index="2">
+          <template #title>
+            <el-icon><location /></el-icon>
+            <span>普通用户操作</span>
+          </template>
+          <el-menu-item index="userInformation">
+          <el-icon>
+            <IconMenu />
+          </el-icon>
+          <span>普通用户信息查看</span>
         </el-menu-item>
+        <el-menu-item index="map2">
+          <el-icon>
+            <Location />
+          </el-icon>
+          <span>已注册用户地图分布点位</span>
+        </el-menu-item>
+        </el-sub-menu>
         <el-menu-item index="task">
-          <el-icon><Setting /></el-icon>
+          <el-icon>
+            <Setting />
+          </el-icon>
           <span>Task</span>
         </el-menu-item>
       </el-menu>
@@ -47,7 +75,7 @@
         <AdminEnterprise />
       </section>
 
-      <section v-else-if="activeMenu === 'map'" class="panel panel-map">
+      <section v-else-if="activeMenu === 'map1'" class="panel panel-map">
         <MapContainer>
           <el-amap-marker
             v-for="item in addressList"
@@ -61,6 +89,22 @@
             :content="buildMarkerContent(item)"
             @click="activeMarkerId = item.id"
           />
+        </MapContainer>
+      </section>
+
+      <section v-else-if="activeMenu === 'map2'" class="panel panel-map">
+        <MapContainer>
+          <ElAmapMarkerCluster
+            v-if="clusterPoints.length"
+            :points="clusterPoints"
+            :grid-size="60"
+            :max-zoom="17"
+            :average-center="true"
+            :cluster-by-zoom-change="true"
+            :render-cluster-marker="renderClusterMarker"
+            :render-marker="renderMarker"
+          />
+          <div v-else class="map-empty">No clustered points available.</div>
         </MapContainer>
       </section>
 
@@ -84,21 +128,34 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue"
 import { useRouter } from "vue-router"
-import { ElAmapMarker } from "@vuemap/vue-amap"
+import { ElAmapMarkerCluster } from "@vuemap/vue-amap"
 import { ElMessage } from "element-plus"
 import { Document, Location, Menu as IconMenu, Setting } from "@element-plus/icons-vue"
 import { useAuthStore } from "../../stores/useAuthStore"
 import AdminPassEnterprise from "./AdminPassEnterprise.vue"
 import AdminEnterprise from "./AdminEnterprise.vue"
 import MapContainer from "../login/MapContainer.vue"
+import markerIconUrl from "../../../material/标点、地点_2.png"
 import request from "../../utils/request"
 import type { Address } from "../../types/Address"
+import type { User } from "../../types/User"
 
 const router = useRouter()
 const authStore = useAuthStore()
 const activeMenu = ref("adminPassEnterprise")
 const addressList = ref<Address[]>([])
 const activeMarkerId = ref("")
+const userTableData = ref<User[]>([])
+
+const clusterPoints = computed(() =>
+  userTableData.value
+    .filter((item) => Number.isFinite(Number(item.longitude)) && Number.isFinite(Number(item.latitude)))
+    .map((item) => ({
+      lnglat: [Number(item.longitude), Number(item.latitude)],
+      id: item.id,
+      username: item.username,
+    }))
+)
 
 const pageTitle = computed(() => {
   switch (activeMenu.value) {
@@ -106,8 +163,10 @@ const pageTitle = computed(() => {
       return "Pending Enterprises"
     case "adminEnterprise":
       return "Approved Enterprises"
-    case "map":
-      return "Enterprise Map"
+    case "map1":
+      return "Enterprise Markers"
+    case "map2":
+      return "Clustered User Map"
     case "role":
       return "Role"
     default:
@@ -121,8 +180,10 @@ const pageSubtitle = computed(() => {
       return "Review enterprise applications and approve records."
     case "adminEnterprise":
       return "Browse enterprises that have already been approved."
-    case "map":
-      return "View enterprise coordinates and location markers."
+    case "map1":
+      return "View enterprise coordinates with rich info cards."
+    case "map2":
+      return "Render around 1000 points efficiently with clustering."
     case "role":
       return "Role settings will appear here."
     default:
@@ -132,7 +193,7 @@ const pageSubtitle = computed(() => {
 
 const logout = () => {
   authStore.clearAuthData()
-  ElMessage.success("登出成功")
+  ElMessage.success("Logged out")
   router.push("/")
 }
 
@@ -145,10 +206,41 @@ const buildMarkerContent = (item: Address) => {
   `
 }
 
+const renderClusterMarker = (context: any) => {
+  const wrapper = document.createElement("div")
+  wrapper.className = "cluster-marker"
+
+  const pin = document.createElement("div")
+  pin.className = "cluster-pin"
+  pin.style.backgroundImage = `url("${markerIconUrl}")`
+
+  const badge = document.createElement("span")
+  badge.className = "cluster-badge"
+  badge.textContent = String(context.count)
+
+  wrapper.append(pin, badge)
+  context.marker.setContent(wrapper)
+  context.marker.setOffset(new AMap.Pixel(-23, -52))
+}
+
+const renderMarker = (context: any) => {
+  const pointDiv = document.createElement("div")
+  pointDiv.className = "point-marker"
+  pointDiv.style.backgroundImage = `url("${markerIconUrl}")`
+
+  context.marker.setContent(pointDiv)
+  context.marker.setOffset(new AMap.Pixel(-11, -34))
+}
+
 const handleSelect = (key: string) => {
   activeMenu.value = key
-  if (key === "map") {
+
+  if (key === "map1") {
     void getAddress()
+  }
+
+  if (key === "map2") {
+    void getAllUser()
   }
 }
 
@@ -158,6 +250,15 @@ const getAddress = async () => {
     addressList.value = res.data ?? []
   } catch {
     ElMessage.error("Failed to load map marker data")
+  }
+}
+
+const getAllUser = async () => {
+  try {
+    const res = await request.get("/getAllUser")
+    userTableData.value = res.data ?? []
+  } catch {
+    ElMessage.error("Failed to load clustered user points")
   }
 }
 </script>
@@ -245,7 +346,20 @@ const getAddress = async () => {
 }
 
 .panel-map {
+  position: relative;
   overflow: hidden;
+}
+
+.map-empty {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #4b5563;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  z-index: 10;
 }
 
 .placeholder-panel {
@@ -304,5 +418,51 @@ const getAddress = async () => {
 :deep(.custom-marker-text) {
   font-size: 12px;
   color: #4b5563;
+}
+
+:deep(.cluster-marker) {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 52px;
+}
+
+:deep(.cluster-pin) {
+  width: 46px;
+  height: 52px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 10px 18px rgba(29, 78, 216, 0.24));
+}
+
+:deep(.cluster-badge) {
+  position: absolute;
+  top: -4px;
+  right: -10px;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1d4ed8;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid #ffffff;
+  box-shadow: 0 6px 18px rgba(29, 78, 216, 0.28);
+}
+
+:deep(.point-marker) {
+  width: 22px;
+  height: 34px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 6px 14px rgba(37, 99, 235, 0.24));
 }
 </style>

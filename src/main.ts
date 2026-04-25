@@ -6,6 +6,7 @@ import router from './router'
 import VueAMap, { initAMapApiLoader } from '@vuemap/vue-amap'
 import '@vuemap/vue-amap/dist/style.css'
 import pinia from './stores'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 initAMapApiLoader({
   key: import.meta.env.VITE_AMAP_KEY,
@@ -13,6 +14,10 @@ initAMapApiLoader({
 })
 
 const app = createApp(App)
+
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component)
+}
 
 app.use(pinia)
 app.use(router)
