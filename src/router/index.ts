@@ -14,6 +14,7 @@ import User from "@/views/user/User.vue";
 import pinia from "@/stores";
 import { useAuthStore } from "@/stores/useAuthStore";
 import Enterprise from "@/views/enterprise/Enterprise.vue";
+import AdminUser from "@/views/admin/AdminUser.vue";
 
 const routes = [
   { path: "/", component: LoginPage },
@@ -41,7 +42,8 @@ const routes = [
   { path: "/map", component: MapContainer },
   { path: "/adminManagement", component: AdminEnterprise },
   { path: "/user", component: User },
-  { path: "/enterprise", component: Enterprise}
+  { path: "/enterprise", component: Enterprise},
+  { path: "/adminUser", component: AdminUser}
 
 ]
 
