@@ -75,6 +75,10 @@
         <AdminEnterprise />
       </section>
 
+      <section v-else-if="activeMenu === 'userInformation'" class="panel">
+        <AdminUser></AdminUser>
+      </section>
+
       <section v-else-if="activeMenu === 'map1'" class="panel panel-map">
         <MapContainer>
           <el-amap-marker
@@ -135,6 +139,7 @@ import { useAuthStore } from "../../stores/useAuthStore"
 import AdminPassEnterprise from "./AdminPassEnterprise.vue"
 import AdminEnterprise from "./AdminEnterprise.vue"
 import MapContainer from "../login/MapContainer.vue"
+import AdminUser from "./AdminUser.vue"
 import markerIconUrl from "../../../material/标点、地点_2.png"
 import request from "../../utils/request"
 import type { Address } from "../../types/Address"
