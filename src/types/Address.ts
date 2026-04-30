@@ -1,6 +1,7 @@
 export interface Address {
     id: string;
     enterpriseName: string;
-    latitude: number;
-    longitude: number;
+    latitude: number | string;
+    longitude: number | string;
+    typeName?: string;
 }
