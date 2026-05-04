@@ -10,10 +10,10 @@ import test2 from "@/views/login/test2.vue";
 import AdminHome from "@/views/admin/AdminHome.vue";
 import MapContainer from "@/views/login/MapContainer.vue";
 import AdminEnterprise from "@/views/admin/AdminEnterprise.vue";
-import User from "@/views/user/User.vue";
+import UserHome from "@/views/user/UserHome.vue";
 import pinia from "@/stores";
 import { useAuthStore } from "@/stores/useAuthStore";
-import Enterprise from "@/views/enterprise/Enterprise.vue";
+import EnterpriseHome from "@/views/enterprise/EnterpriseHome.vue";
 import AdminUser from "@/views/admin/AdminUser.vue";
 
 const routes = [
@@ -41,9 +41,9 @@ const routes = [
   },
   { path: "/map", component: MapContainer },
   { path: "/adminManagement", component: AdminEnterprise },
-  { path: "/user", component: User },
-  { path: "/enterprise", component: Enterprise},
-  { path: "/adminUser", component: AdminUser}
+  { path: "/user", component: UserHome },
+  { path: "/enterprise", component: EnterpriseHome },
+  { path: "/adminUser", component: AdminUser }
 
 ]
 
