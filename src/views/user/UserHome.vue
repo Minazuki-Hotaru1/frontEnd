@@ -1,5 +1,7 @@
-<template>111</template>
+<template>
+  <UserMap />
+</template>
 
-<script lang="ts" setup></script>
-
-<style></style>
+<script lang="ts" setup>
+import UserMap from "./UserMap.vue";
+</script>
