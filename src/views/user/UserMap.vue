@@ -29,11 +29,109 @@
         @click="activeEnterpriseId = item.id"
       />
     </MapContainer>
+
+    <el-dialog
+      v-model="recommendDialogVisible"
+      title="预约推荐"
+      width="720px"
+      class="reservation-dialog"
+    >
+      <div class="recommend-message">{{ recommendMessage }}</div>
+
+      <div class="recommend-list">
+        <div
+          v-for="item in recommendList"
+          :key="item.enterpriseId"
+          class="recommend-card"
+          :class="{ active: selectedRecommendEnterpriseId === item.enterpriseId }"
+        >
+          <div class="recommend-main">
+            <div class="recommend-title">{{ item.enterpriseName || "未命名企业" }}</div>
+            <div class="recommend-meta">企业ID：{{ item.enterpriseId }}</div>
+            <div class="recommend-stats">
+              <span>驾车时间：{{ formatDrivingTime(item.enTime) }}</span>
+              <span>
+                在线情况：{{ item.onlineCount }}/{{ item.onlineCapacity }}
+                {{ formatCrowdText(item.onlineCount, item.onlineCapacity) }}
+              </span>
+            </div>
+          </div>
+          <el-button
+            type="primary"
+            plain
+            @click="openReservationFormFromRecommend(item)"
+          >
+            预约
+          </el-button>
+        </div>
+      </div>
+
+      <template #footer>
+        <el-button @click="closeRecommendDialog">取消</el-button>
+        <el-button type="primary" @click="continueCurrentEnterpriseReservation">
+          继续预约当前选择的企业
+        </el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog
+      v-model="reservationDialogVisible"
+      title="填写预约信息"
+      width="520px"
+      class="reservation-dialog"
+    >
+      <div v-if="reservationTarget" class="reservation-target">
+        <div class="reservation-target-label">当前预约企业</div>
+        <div class="reservation-target-name">{{ reservationTarget.enterpriseName }}</div>
+        <div class="reservation-target-meta">企业ID：{{ reservationTarget.enterpriseId }}</div>
+      </div>
+
+      <el-form :model="reservationForm" label-width="96px" class="reservation-form">
+        <el-form-item label="预约日期">
+          <el-date-picker
+            v-model="reservationForm.date"
+            type="date"
+            placeholder="请选择预约日期"
+            value-format="YYYY-MM-DD"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="开始时间">
+          <el-time-picker
+            v-model="reservationForm.startTime"
+            placeholder="请选择开始时间"
+            value-format="HH:mm:ss"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="结束时间">
+          <el-time-picker
+            v-model="reservationForm.endTime"
+            placeholder="请选择结束时间"
+            value-format="HH:mm:ss"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input
+            v-model="reservationForm.remark"
+            type="textarea"
+            :rows="3"
+            placeholder="可以填写预约说明，非必填"
+          />
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="reservationDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitReservationForm">确认预约</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { useAuthStore } from "../../stores/useAuthStore";
 import request from "../../utils/request";
@@ -51,6 +149,26 @@ interface EnterpriseMapItem {
   typeName?: string;
 }
 
+interface ReserveCheckResponse {
+  success?: boolean;
+  message?: string;
+  enterpriseMap?: RecommendEnterpriseItem[];
+}
+
+interface RecommendEnterpriseItem {
+  enterpriseId: string;
+  enterpriseName: string;
+  enTime?: string | number;
+  onlineCount?: string | number;
+  onlineCapacity?: string | number;
+}
+
+interface ReservationTarget {
+  enterpriseId: string;
+  enterpriseName: string;
+  enterpriseType: string;
+}
+
 const TYPE_HOSPITAL = "\u533b\u9662";
 const TYPE_PARKING = "\u505c\u8f66\u573a";
 const TYPE_PARK = "\u516c\u56ed\u666f\u70b9";
@@ -61,6 +179,19 @@ const authStore = useAuthStore();
 const enList = ref<EnterpriseMapItem[]>([]);
 const activeEnterpriseId = ref("");
 const selectedEnterpriseType = ref("all");
+const recommendDialogVisible = ref(false);
+const reservationDialogVisible = ref(false);
+const recommendMessage = ref("");
+const recommendList = ref<RecommendEnterpriseItem[]>([]);
+const selectedRecommendEnterpriseId = ref("");
+const currentReserveTarget = ref<ReservationTarget | null>(null);
+const reservationTarget = ref<ReservationTarget | null>(null);
+const reservationForm = reactive({
+  date: "",
+  startTime: "",
+  endTime: "",
+  remark: "",
+});
 
 const enterpriseTypeOptions = [
   { label: "\u5168\u90e8\u4f01\u4e1a", value: "all", className: "type-all" },
@@ -114,27 +245,112 @@ const reserveEnterprise = async (enterpriseId: string, enterpriseTypeCode: strin
   const userId = authStore.id;
 
   if (!userId) {
-    ElMessage.warning("Please log in again before making a reservation");
+    ElMessage.warning("请先重新登录后再进行预约");
     return;
   }
 
-  try {
-    const res = await request.post("/userReserveEnterprise", {
-      userId,
-      enterpriseId,
-      enterpriseType: enterpriseTypeCode,
-    });
+  const enterprise = enList.value.find((item) => item.id === enterpriseId);
+  currentReserveTarget.value = {
+    enterpriseId,
+    enterpriseName: enterprise?.enterpriseName || "当前选择企业",
+    enterpriseType: enterpriseTypeCode,
+  };
 
-    if (res.data?.success === false) {
-      ElMessage.error(res.data.message || "Reservation failed");
+  try {
+    const res = await request.post<ReserveCheckResponse>("/userReserveEnterprise", null, {
+      params: {
+        userId,
+        enterpriseId,
+        enterpriseType: enterpriseTypeCode,
+      },
+    });
+    const data = res.data;
+
+    if (data?.success === false) {
+      ElMessage.error(data.message || "当前企业暂时不能预约");
       return;
     }
 
-    ElMessage.success(res.data?.message || "Reservation submitted");
-    void getAllEnList();
+    if (data?.success === true && !data.message) {
+      openReservationForm(currentReserveTarget.value);
+      return;
+    }
+
+    if (data?.success === true && data.message) {
+      openRecommendDialog(data);
+      return;
+    }
+
+    ElMessage.warning("后端没有返回有效的预约判断结果");
   } catch {
-    ElMessage.error("Reservation request failed");
+    ElMessage.error("预约判断请求失败");
   }
+};
+
+const openRecommendDialog = (data: ReserveCheckResponse) => {
+  recommendMessage.value = data.message || "";
+  recommendList.value = data.enterpriseMap ?? [];
+  selectedRecommendEnterpriseId.value = recommendList.value[0]?.enterpriseId || "";
+  recommendDialogVisible.value = true;
+};
+
+const closeRecommendDialog = () => {
+  recommendDialogVisible.value = false;
+  recommendList.value = [];
+  selectedRecommendEnterpriseId.value = "";
+};
+
+const openReservationFormFromRecommend = (item: RecommendEnterpriseItem) => {
+  selectedRecommendEnterpriseId.value = item.enterpriseId;
+  openReservationForm({
+    enterpriseId: item.enterpriseId,
+    enterpriseName: item.enterpriseName || "推荐企业",
+    enterpriseType: currentReserveTarget.value?.enterpriseType || enterpriseTypeCodeMap[TYPE_OTHER],
+  });
+  recommendDialogVisible.value = false;
+};
+
+const continueCurrentEnterpriseReservation = () => {
+  if (!currentReserveTarget.value) {
+    ElMessage.warning("没有找到当前选择的企业信息");
+    return;
+  }
+
+  openReservationForm(currentReserveTarget.value);
+  recommendDialogVisible.value = false;
+};
+
+const openReservationForm = (target: ReservationTarget | null) => {
+  if (!target) {
+    ElMessage.warning("没有找到可预约的企业信息");
+    return;
+  }
+
+  reservationTarget.value = target;
+  resetReservationForm();
+  reservationDialogVisible.value = true;
+};
+
+const resetReservationForm = () => {
+  reservationForm.date = "";
+  reservationForm.startTime = "";
+  reservationForm.endTime = "";
+  reservationForm.remark = "";
+};
+
+const submitReservationForm = () => {
+  if (!reservationTarget.value) {
+    ElMessage.warning("请先选择预约企业");
+    return;
+  }
+
+  if (!reservationForm.date || !reservationForm.startTime || !reservationForm.endTime) {
+    ElMessage.warning("请填写完整的预约日期和时间");
+    return;
+  }
+
+  ElMessage.success("预约信息已填写，请接入后续正式预约接口");
+  reservationDialogVisible.value = false;
 };
 
 const buildEnterpriseCard = (item: EnterpriseMapItem) => {
@@ -217,6 +433,27 @@ const getPercent = (count: number, capacity: number) => {
   }
 
   return Math.min(100, Math.max(0, Math.round((count / capacity) * 100)));
+};
+
+const formatDrivingTime = (value: string | number | undefined) => {
+  const seconds = toNumber(value);
+  if (seconds <= 0) {
+    return "暂无数据";
+  }
+
+  const minutes = Math.ceil(seconds / 60);
+  return `${minutes} 分钟`;
+};
+
+const formatCrowdText = (count: string | number | undefined, capacity: string | number | undefined) => {
+  const percent = getPercent(toNumber(count), toNumber(capacity));
+  if (percent >= 90) {
+    return "较拥挤";
+  }
+  if (percent >= 70) {
+    return "偏忙";
+  }
+  return "较空闲";
 };
 
 const escapeHtml = (value: string) =>
@@ -509,5 +746,115 @@ onUnmounted(() => {
 :deep(.marker-other .enterprise-card-kicker) {
   background: rgba(124, 58, 237, 0.12);
   color: #6d28d9;
+}
+
+:deep(.reservation-dialog .el-dialog) {
+  border-radius: 16px;
+}
+
+.recommend-message {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.recommend-list {
+  display: grid;
+  gap: 12px;
+}
+
+.recommend-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.recommend-card:hover,
+.recommend-card.active {
+  border-color: #2563eb;
+  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.12);
+  transform: translateY(-1px);
+}
+
+.recommend-main {
+  min-width: 0;
+}
+
+.recommend-title {
+  margin-bottom: 5px;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.recommend-meta {
+  margin-bottom: 8px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.recommend-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #475569;
+  font-size: 13px;
+}
+
+.recommend-stats span {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+}
+
+.reservation-target {
+  margin-bottom: 18px;
+  padding: 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #eff6ff, #f8fafc);
+  border: 1px solid #dbeafe;
+}
+
+.reservation-target-label {
+  margin-bottom: 5px;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reservation-target-name {
+  margin-bottom: 5px;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.reservation-target-meta {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.reservation-form {
+  padding-top: 2px;
+}
+
+@media (max-width: 720px) {
+  .recommend-card {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }
 </style>
