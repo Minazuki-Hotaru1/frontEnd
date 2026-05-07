@@ -139,6 +139,7 @@ import MapContainer from "../login/MapContainer.vue";
 
 interface EnterpriseMapItem {
   id: string;
+  enId?: string;
   enterpriseName: string;
   latitude: string | number;
   longitude: string | number;
@@ -249,7 +250,7 @@ const reserveEnterprise = async (enterpriseId: string, enterpriseTypeCode: strin
     return;
   }
 
-  const enterprise = enList.value.find((item) => item.id === enterpriseId);
+  const enterprise = enList.value.find((item) => (item.enId || item.id) === enterpriseId);
   currentReserveTarget.value = {
     enterpriseId,
     enterpriseName: enterprise?.enterpriseName || "当前选择企业",
@@ -394,7 +395,7 @@ const buildEnterpriseCard = (item: EnterpriseMapItem) => {
       <button
         type="button"
         class="reserve-enterprise-btn"
-        data-enterprise-id="${escapeHtml(item.id)}"
+        data-enterprise-id="${escapeHtml(item.enId || item.id)}"
         data-enterprise-type="${typeCode}"
         ${reservationFull ? "disabled" : ""}
       >
