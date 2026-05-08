@@ -6,25 +6,6 @@
       border
       style="width: 100%"
     >
-      <template #empty>
-        <div class="empty-state">
-          <svg
-            class="empty-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            width="48"
-            height="48"
-          >
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-          </svg>
-          <p class="empty-text">今天没有预约用户</p>
-        </div>
-      </template>
       <el-table-column
         prop="id"
         label="ID"
@@ -55,6 +36,21 @@
         label="预约结束时间"
         min-width="160"
       />
+      <el-table-column
+        label="预约状态"
+        width="140"
+        align="center"
+      >
+        <template #default="{ row }">
+          <span
+            class="status-tag"
+            :class="statusClass(row.appStatus)"
+          >
+            <span class="status-dot"></span>
+            {{ statusText(row.appStatus) }}
+          </span>
+        </template>
+      </el-table-column>
       <el-table-column
         label="备注"
         width="140"
@@ -121,11 +117,25 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 
+const statusMap: Record<string, { text: string; class: string }> = {
+  "1": { text: "预约未到达", class: "status-pending" },
+  "2": { text: "预约已到达", class: "status-arrived" },
+  "3": { text: "已超预约时间", class: "status-expired" },
+};
+
+const statusText = (status: string | null) => {
+  return statusMap[status ?? ""]?.text ?? "未知状态";
+};
+
+const statusClass = (status: string | null) => {
+  return statusMap[status ?? ""]?.class ?? "status-unknown";
+};
+
 const getAppointment = async (page = currentPage.value) => {
   loading.value = true;
 
   try {
-    const res = await request.get("/getPendingApp", {
+    const res = await request.get("/getAllAppSorted", {
       params: {
         enId: authStore.id,
         page,
@@ -170,6 +180,44 @@ onMounted(() => {
   margin-top: 20px;
 }
 
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  user-select: none;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.status-pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.status-arrived {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.status-expired {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.status-unknown {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
 .remark-link {
   color: #2563eb;
   cursor: pointer;
@@ -201,25 +249,5 @@ onMounted(() => {
   font-size: 14px;
   line-height: 1.7;
   word-break: break-all;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 20px;
-}
-
-.empty-icon {
-  color: #d1d5db;
-  margin-bottom: 14px;
-}
-
-.empty-text {
-  margin: 0;
-  color: #9ca3af;
-  font-size: 15px;
-  font-weight: 600;
 }
 </style>

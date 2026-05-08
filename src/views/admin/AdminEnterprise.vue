@@ -112,7 +112,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { ElMessage } from "element-plus";
 import request from "../../utils/request";
 import type { EnterpriseStatus } from "../../types/EnterpriseStatus";
@@ -133,6 +133,23 @@ const total = ref(0);
 const tableData = ref<Enterprise[]>([]);
 const enStatusTable = ref(false);
 const enStatusMessage = ref<EnterpriseStatus>();
+
+const toNum = (value: string | number | undefined) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const reservationPercent = computed(() => {
+  const count = toNum(enStatusMessage.value?.reservedCount);
+  const cap = toNum(enStatusMessage.value?.reservationCapacity);
+  return cap > 0 ? Math.min(100, Math.round((count / cap) * 100)) : 0;
+});
+
+const onlinePercent = computed(() => {
+  const count = toNum(enStatusMessage.value?.onlineCount);
+  const cap = toNum(enStatusMessage.value?.onlineCapacity);
+  return cap > 0 ? Math.min(100, Math.round((count / cap) * 100)) : 0;
+});
 
 const getTableData = async (page = currentPage.value) => {
   loading.value = true;
@@ -190,5 +207,100 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: 20px;
+}
+
+.status-dashboard {
+  display: grid;
+  gap: 16px;
+  padding: 4px 0;
+}
+
+.status-card {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.status-card:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+}
+
+.status-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.reservation-icon {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+.online-icon {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.status-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.status-card-label {
+  margin-bottom: 6px;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.status-card-count {
+  margin-bottom: 10px;
+  color: #374151;
+  font-size: 14px;
+}
+
+.status-card-count strong {
+  font-size: 22px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.status-card-sep {
+  margin: 0 4px;
+  color: #9ca3af;
+}
+
+.status-card-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  overflow: hidden;
+}
+
+.status-card-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.5s ease;
+}
+
+.reservation-fill {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.online-fill {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
 }
 </style>
