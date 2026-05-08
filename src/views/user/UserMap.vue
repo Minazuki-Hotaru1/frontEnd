@@ -17,6 +17,16 @@
 
     <MapContainer>
       <el-amap-marker
+        v-if="userLocation"
+        :position="[Number(userLocation.longitude), Number(userLocation.latitude)]"
+        anchor="bottom-center"
+        :offset="[0, -10]"
+        :top-when-click="true"
+        :z-index="300"
+        :content="buildUserLocationCard(userLocation)"
+      />
+
+      <el-amap-marker
         v-for="item in filteredEnList"
         :key="item.id"
         :position="[Number(item.longitude), Number(item.latitude)]"
@@ -176,7 +186,14 @@ const TYPE_PARK = "\u516c\u56ed\u666f\u70b9";
 const TYPE_CHARGING = "\u65b0\u80fd\u6e90\u5145\u7535\u6869\u505c\u8f66\u573a";
 const TYPE_OTHER = "\u5176\u4ed6";
 
+interface UserLocation {
+  latitude: string | number;
+  longitude: string | number;
+  address: string;
+}
+
 const authStore = useAuthStore();
+const userLocation = ref<UserLocation | null>(null);
 const enList = ref<EnterpriseMapItem[]>([]);
 const activeEnterpriseId = ref("");
 const selectedEnterpriseType = ref("all");
@@ -233,12 +250,38 @@ const filteredEnList = computed(() => {
   return validPoints.filter((item) => item.typeName === selectedEnterpriseType.value);
 });
 
+const getUserLocation = async () => {
+  const userId = authStore.id;
+  if (!userId) {
+    ElMessage.warning("请先登录后再查看位置");
+    return;
+  }
+
+  try {
+    const res = await request.get("/getUserLocation", {
+      params: { userId },
+    });
+    const data = res.data;
+    if (data && Number.isFinite(Number(data.latitude)) && Number.isFinite(Number(data.longitude))) {
+      userLocation.value = {
+        latitude: data.latitude,
+        longitude: data.longitude,
+        address: data.address || "未知地址",
+      };
+    } else {
+      ElMessage.warning("未查询到您的地址信息");
+    }
+  } catch {
+    ElMessage.error("获取用户位置失败，请检查后端接口");
+  }
+};
+
 const getAllEnList = async () => {
   try {
     const res = await request.get("/userGetAllEn");
     enList.value = res.data ?? [];
   } catch {
-    ElMessage.error("Failed to load enterprise map data");
+    ElMessage.error("企业地图数据加载失败");
   }
 };
 
@@ -352,6 +395,20 @@ const submitReservationForm = () => {
 
   ElMessage.success("预约信息已填写，请接入后续正式预约接口");
   reservationDialogVisible.value = false;
+};
+
+const buildUserLocationCard = (loc: UserLocation) => {
+  return `
+    <div class="user-location-card">
+      <div class="user-location-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+      </div>
+      <div class="user-location-label">我的位置</div>
+      <div class="user-location-address">${escapeHtml(loc.address)}</div>
+    </div>
+  `;
 };
 
 const buildEnterpriseCard = (item: EnterpriseMapItem) => {
@@ -472,6 +529,7 @@ const escapeHtml = (value: string) =>
 
 onMounted(() => {
   document.addEventListener("click", handleReserveClick);
+  void getUserLocation();
   void getAllEnList();
 });
 
@@ -562,6 +620,69 @@ onUnmounted(() => {
   color: #64748b;
   font-size: 13px;
   font-weight: 600;
+}
+
+:deep(.user-location-card) {
+  position: relative;
+  min-width: 180px;
+  padding: 13px 14px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%);
+  border: 2px solid #f97316;
+  box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.18), 0 14px 30px rgba(15, 23, 42, 0.22);
+  color: #1f2937;
+  overflow: hidden;
+}
+
+:deep(.user-location-card::before) {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: linear-gradient(180deg, #f97316 0%, #ea580c 100%);
+}
+
+:deep(.user-location-card::after) {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -12px;
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border-right: 2px solid #f97316;
+  border-bottom: 2px solid #f97316;
+  transform: translateX(-50%) rotate(45deg);
+  box-shadow: 6px 6px 14px rgba(15, 23, 42, 0.06);
+}
+
+:deep(.user-location-icon) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 7px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  color: #ffffff;
+}
+
+:deep(.user-location-label) {
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ea580c;
+}
+
+:deep(.user-location-address) {
+  max-width: 200px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.4;
 }
 
 :deep(.enterprise-map-card) {

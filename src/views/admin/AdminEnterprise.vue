@@ -42,16 +42,59 @@
     <el-dialog
       v-model="enStatusTable"
       title="企业状态"
+      width="480"
+      align-center
     >
-      <div>
-        预约状态：{{ enStatusMessage?.reservedCount }}/{{
-          enStatusMessage?.reservationCapacity
-        }}
-      </div>
-      <div>
-        在线人数：{{ enStatusMessage?.onlineCount }}/{{
-          enStatusMessage?.onlineCapacity
-        }}
+      <div class="status-dashboard">
+        <div class="status-card">
+          <div class="status-card-icon reservation-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div class="status-card-body">
+            <div class="status-card-label">预约状态</div>
+            <div class="status-card-count">
+              <strong>{{ enStatusMessage?.reservedCount ?? 0 }}</strong>
+              <span class="status-card-sep">/</span>
+              <span>{{ enStatusMessage?.reservationCapacity ?? 0 }}</span>
+            </div>
+            <div class="status-card-track">
+              <span
+                class="status-card-fill reservation-fill"
+                :style="{ width: reservationPercent + '%' }"
+              ></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-card">
+          <div class="status-card-icon online-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="status-card-body">
+            <div class="status-card-label">在线人数</div>
+            <div class="status-card-count">
+              <strong>{{ enStatusMessage?.onlineCount ?? 0 }}</strong>
+              <span class="status-card-sep">/</span>
+              <span>{{ enStatusMessage?.onlineCapacity ?? 0 }}</span>
+            </div>
+            <div class="status-card-track">
+              <span
+                class="status-card-fill online-fill"
+                :style="{ width: onlinePercent + '%' }"
+              ></span>
+            </div>
+          </div>
+        </div>
       </div>
     </el-dialog>
 

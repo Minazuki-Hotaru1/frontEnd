@@ -1,45 +1,55 @@
 <template>
   <div class="admin-home">
     <aside class="sidebar">
-      <div class="sidebar-title">Admin Panel</div>
+      <div class="sidebar-title">管理面板</div>
       <el-menu :default-active="activeMenu" class="menu" @select="handleSelect">
         <el-sub-menu index="enterprise">
           <template #title>
             <el-icon><IconMenu /></el-icon>
-            <span>Enterprise</span>
+            <span>企业管理</span>
           </template>
-          <el-menu-item index="adminPassEnterprise">
-            <el-icon><Document /></el-icon>
-            <span>Pending Review</span>
-          </el-menu-item>
+          <el-sub-menu index="enterpriseReview">
+            <template #title>
+              <el-icon><Document /></el-icon>
+              <span>企业审核</span>
+            </template>
+            <el-menu-item index="pendingEnterpriseReview">
+              <el-icon><Document /></el-icon>
+              <span>待审核企业</span>
+            </el-menu-item>
+            <el-menu-item index="reviewedEnterpriseReview">
+              <el-icon><Finished /></el-icon>
+              <span>已审核企业</span>
+            </el-menu-item>
+          </el-sub-menu>
           <el-menu-item index="adminEnterprise">
             <el-icon><Finished /></el-icon>
-            <span>Enterprise List</span>
+            <span>企业列表</span>
           </el-menu-item>
           <el-menu-item index="map1">
             <el-icon><Location /></el-icon>
-            <span>Enterprise Map</span>
+            <span>企业地图</span>
           </el-menu-item>
         </el-sub-menu>
 
         <el-sub-menu index="user">
           <template #title>
             <el-icon><Location /></el-icon>
-            <span>User</span>
+            <span>用户管理</span>
           </template>
           <el-menu-item index="userInformation">
             <el-icon><IconMenu /></el-icon>
-            <span>User List</span>
+            <span>用户列表</span>
           </el-menu-item>
           <el-menu-item index="map2">
             <el-icon><Location /></el-icon>
-            <span>User Cluster Map</span>
+            <span>用户聚类地图</span>
           </el-menu-item>
         </el-sub-menu>
 
         <el-menu-item index="task">
           <el-icon><Setting /></el-icon>
-          <span>Task</span>
+          <span>任务管理</span>
         </el-menu-item>
       </el-menu>
     </aside>
@@ -50,11 +60,15 @@
           <h1 class="content-title">{{ pageTitle }}</h1>
           <p class="content-subtitle">{{ pageSubtitle }}</p>
         </div>
-        <button class="logout-btn" type="button" @click="logout">Logout</button>
+        <button class="logout-btn" type="button" @click="logout">退出登录</button>
       </div>
 
-      <section v-if="activeMenu === 'adminPassEnterprise'" class="panel">
-        <AdminPassEnterprise />
+      <section v-if="activeMenu === 'pendingEnterpriseReview'" class="panel">
+        <AdminPassEnterprise key="pendingEnterpriseReview" review-status="pending" />
+      </section>
+
+      <section v-else-if="activeMenu === 'reviewedEnterpriseReview'" class="panel">
+        <AdminPassEnterprise key="reviewedEnterpriseReview" review-status="reviewed" />
       </section>
 
       <section v-else-if="activeMenu === 'adminEnterprise'" class="panel">
@@ -109,14 +123,14 @@
             :render-cluster-marker="renderClusterMarker"
             :render-marker="renderMarker"
           />
-          <div v-else class="map-empty">No clustered points available.</div>
+          <div v-else class="map-empty">暂无聚类数据</div>
         </MapContainer>
       </section>
 
       <section v-else class="panel placeholder-panel">
         <div class="placeholder-card">
-          <h3>Task</h3>
-          <p>This module is not configured yet.</p>
+          <h3>任务管理</h3>
+          <p>该模块尚未配置。</p>
         </div>
       </section>
     </main>
@@ -124,10 +138,10 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElAmapMarkerCluster } from "@vuemap/vue-amap";
-import { ElMessage } from "element-plus";
+import { ElMessage, ElNotification } from "element-plus";
 import {
   Document,
   Finished,
@@ -146,7 +160,7 @@ import type { User } from "../../types/User";
 
 const router = useRouter();
 const authStore = useAuthStore();
-const activeMenu = ref("adminPassEnterprise");
+const activeMenu = ref("");
 const addressList = ref<Address[]>([]);
 const activeMarkerId = ref("");
 const userTableData = ref<User[]>([]);
@@ -203,42 +217,48 @@ const clusterPoints = computed(() =>
 
 const pageTitle = computed(() => {
   switch (activeMenu.value) {
-    case "adminPassEnterprise":
-      return "Pending Enterprises";
+    case "pendingEnterpriseReview":
+      return "待审核企业";
+    case "reviewedEnterpriseReview":
+      return "已审核企业";
     case "adminEnterprise":
-      return "Approved Enterprises";
+      return "已批准企业";
     case "userInformation":
-      return "User List";
+      return "用户列表";
     case "map1":
-      return "Enterprise Map";
+      return "企业地图";
     case "map2":
-      return "User Cluster Map";
+      return "用户聚类地图";
     default:
-      return "Task";
+      return "任务管理";
   }
 });
 
 const pageSubtitle = computed(() => {
   switch (activeMenu.value) {
+    case "pendingEnterpriseReview":
+      return "审核新注册的企业账号。";
+    case "reviewedEnterpriseReview":
+      return "查看已完成审核的企业账号。";
     case "map1":
-      return "Filter enterprise cards by type and view their locations.";
+      return "按类型筛选企业卡片并查看其位置。";
     case "map2":
-      return "Render around 1000 user points efficiently with clustering.";
+      return "使用聚类高效渲染用户坐标点。";
     default:
-      return "Manage city platform records.";
+      return "管理城市平台记录。";
   }
 });
 
 const logout = () => {
   authStore.clearAuthData();
-  ElMessage.success("Logged out");
+  ElMessage.success("已退出登录");
   router.push("/");
 };
 
 const buildMarkerContent = (item: Address) => {
   const typeName = item.typeName || TYPE_OTHER;
   const typeClass = enterpriseTypeClassMap[typeName] || enterpriseTypeClassMap[TYPE_OTHER];
-  const enterpriseName = escapeHtml(item.enterpriseName || "Unknown Enterprise");
+  const enterpriseName = escapeHtml(item.enterpriseName || "未知企业");
   const safeId = escapeHtml(item.id);
   const safeTypeName = escapeHtml(typeName);
 
@@ -307,7 +327,7 @@ const getAddress = async () => {
     const res = await request.get("/getAddress");
     addressList.value = res.data ?? [];
   } catch {
-    ElMessage.error("Failed to load map marker data");
+    ElMessage.error("地图标记数据加载失败");
   }
 };
 
@@ -316,9 +336,33 @@ const getAllUser = async () => {
     const res = await request.get("/getAllUser");
     userTableData.value = res.data ?? [];
   } catch {
-    ElMessage.error("Failed to load clustered user points");
+    ElMessage.error("用户聚类数据加载失败");
   }
 };
+
+const notifyNewEnterpriseRegistrations = async () => {
+  try {
+    const res = await request.get("/getNewConfirmCount");
+    const count = Number(res.data?.count ?? 0);
+
+    if (count > 0) {
+      ElNotification({
+        title: "新企业注册",
+        message: `${count} 个新企业用户等待审核。`,
+        type: "info",
+        duration: 6000,
+      });
+    }
+  } catch {
+    ElMessage.warning("检查新企业注册失败");
+  } finally {
+    activeMenu.value = "pendingEnterpriseReview";
+  }
+};
+
+onMounted(() => {
+  void notifyNewEnterpriseRegistrations();
+});
 </script>
 
 <style scoped>

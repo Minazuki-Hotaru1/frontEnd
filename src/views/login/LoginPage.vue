@@ -16,12 +16,12 @@
       </el-form-item>
       <div class="input-field">
         <input id="username" v-model="username" autocomplete="on" type="text" name="username" placeholder=" " />
-        <label for="username">Full Name</label>
+        <label for="username">用户名</label>
       </div>
 
       <div class="input-field">
         <input id="password" v-model="password" autocomplete="on" type="password" name="password" placeholder=" " />
-        <label for="password">Password</label>
+        <label for="password">密码</label>
       </div>
 
       <div class="btn-container">

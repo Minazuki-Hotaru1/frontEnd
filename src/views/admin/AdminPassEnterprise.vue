@@ -69,10 +69,12 @@
 
       <el-table-column
         label="操作按钮"
+        v-if="reviewStatus === 'pending'"
         width="120"
       >
         <template #default="scope">
           <el-button
+            v-if="reviewStatus === 'pending'"
             plain
             type="success"
             class="button1"
@@ -82,6 +84,7 @@
           </el-button>
           <br />
           <el-button
+            v-if="reviewStatus === 'pending'"
             plain
             type="danger"
             class="button1"
@@ -191,6 +194,16 @@
 import { computed, onMounted, ref } from "vue";
 import { ElMessage } from "element-plus";
 import request from "../../utils/request";
+
+const props = withDefaults(
+  defineProps<{
+    reviewStatus?: "pending" | "reviewed";
+  }>(),
+  {
+    reviewStatus: "pending",
+  },
+);
+const reviewStatus = computed(() => props.reviewStatus);
 
 const clickAddress = ref(false);
 
@@ -304,6 +317,7 @@ const fetchConfirmList = async (page = currentPage.value) => {
       params: {
         page,
         number: pageSize.value,
+        reviewStatus: props.reviewStatus,
       },
     });
 
