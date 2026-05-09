@@ -452,7 +452,7 @@ const submitReservation = async () => {
     const res = await request.put("/userReserveEnterpriseSuccess", {
       userId: authStore.id,
       enterpriseId: reservationTarget.value.enterpriseId,
-      data: reservationForm.date + " ",
+      date: reservationForm.date,
       startTime: reservationForm.startTime,
       endTime: reservationForm.endTime,
       remarks: reservationForm.remark || "",

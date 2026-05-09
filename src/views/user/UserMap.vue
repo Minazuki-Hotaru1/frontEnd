@@ -391,7 +391,7 @@ const resetReservationForm = () => {
   reservationForm.remark = "";
 };
 
-const submitReservationForm = () => {
+const submitReservationForm = async () => {
   if (!reservationTarget.value) {
     ElMessage.warning("请先选择预约企业");
     return;
@@ -402,8 +402,26 @@ const submitReservationForm = () => {
     return;
   }
 
-  ElMessage.success("预约信息已填写，请接入后续正式预约接口");
-  reservationDialogVisible.value = false;
+  try {
+    const res = await request.put("/userReserveEnterpriseSuccess", {
+      userId: authStore.id,
+      enterpriseId: reservationTarget.value.enterpriseId,
+      date: reservationForm.date,
+      startTime: reservationForm.startTime,
+      endTime: reservationForm.endTime,
+      remarks: reservationForm.remark || "",
+    });
+
+    if (res.data?.success) {
+      ElMessage.success(res.data.message || "预约成功");
+      reservationDialogVisible.value = false;
+      void getAllEnList();
+    } else {
+      ElMessage.error(res.data?.message || "预约失败");
+    }
+  } catch {
+    ElMessage.error("预约请求失败");
+  }
 };
 
 const buildUserLocationCard = (loc: UserLocation) => {
