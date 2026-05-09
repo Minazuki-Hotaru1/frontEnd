@@ -1,0 +1,258 @@
+<template>
+  <div class="guest-home">
+    <aside class="sidebar">
+      <div class="sidebar-title">游客浏览</div>
+      <el-menu :default-active="activeMenu" class="menu" @select="handleSelect">
+        <el-menu-item index="enMap">
+          <el-icon><Location /></el-icon>
+          <span>企业地图</span>
+        </el-menu-item>
+        <el-menu-item index="enList">
+          <el-icon><Document /></el-icon>
+          <span>企业列表</span>
+        </el-menu-item>
+      </el-menu>
+    </aside>
+
+    <main class="content">
+      <div class="content-header">
+        <div>
+          <h1 class="content-title">{{ pageTitle }}</h1>
+          <p class="content-subtitle">{{ pageSubtitle }}</p>
+        </div>
+        <el-button class="logout-btn" type="primary" @click="goLogin">返回登录</el-button>
+      </div>
+
+      <section v-if="activeMenu === 'enMap'" class="panel panel-map">
+        <UserMap @guest-reserve="showGuestTip" />
+      </section>
+
+      <section v-else-if="activeMenu === 'enList'" class="panel">
+        <UserEnterpriseList @guest-reserve="showGuestTip" />
+      </section>
+    </main>
+
+    <!-- 游客提示弹窗 -->
+    <el-dialog v-model="tipDialogVisible" title="提示" width="420px" :close-on-click-modal="false">
+      <div class="tip-content">
+        <el-icon class="tip-icon" :size="48" color="#f59e0b"><WarningFilled /></el-icon>
+        <p class="tip-text">您当前是游客身份，无法进行预约操作</p>
+        <p class="tip-sub">请登录普通用户账号后再进行预约</p>
+      </div>
+      <template #footer>
+        <el-button @click="tipDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="openLoginDialog">登录</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 游客登录弹窗 -->
+    <el-dialog v-model="loginDialogVisible" title="用户登录" width="420px" :close-on-click-modal="false">
+      <el-form :model="loginForm" label-width="80px" @submit.prevent="handleGuestLogin">
+        <el-form-item label="用户名">
+          <el-input v-model="loginForm.username" placeholder="请输入用户名" />
+        </el-form-item>
+        <el-form-item label="密码">
+          <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" show-password />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="loginDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="loginLoading" @click="handleGuestLogin">登录</el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { computed, reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
+import { Document, Location, WarningFilled } from "@element-plus/icons-vue";
+import { useAuthStore } from "../../stores/useAuthStore";
+import request from "../../utils/request";
+import UserMap from "./UserMap.vue";
+import UserEnterpriseList from "./UserEnterpriseList.vue";
+
+const router = useRouter();
+const authStore = useAuthStore();
+const activeMenu = ref("enMap");
+
+const tipDialogVisible = ref(false);
+const loginDialogVisible = ref(false);
+const loginLoading = ref(false);
+const loginForm = reactive({
+  username: "",
+  password: "",
+});
+
+const pageTitle = computed(() => {
+  switch (activeMenu.value) {
+    case "enMap": return "企业地图";
+    case "enList": return "企业列表";
+    default: return "游客浏览";
+  }
+});
+
+const pageSubtitle = computed(() => {
+  switch (activeMenu.value) {
+    case "enMap": return "在地图上查看企业位置和信息。";
+    case "enList": return "浏览和搜索企业信息，按距离排序。";
+    default: return "浏览企业信息。";
+  }
+});
+
+const handleSelect = (key: string) => {
+  activeMenu.value = key;
+};
+
+const goLogin = () => {
+  authStore.clearAuthData();
+  router.push("/");
+};
+
+const showGuestTip = () => {
+  tipDialogVisible.value = true;
+};
+
+const openLoginDialog = () => {
+  tipDialogVisible.value = false;
+  loginForm.username = "";
+  loginForm.password = "";
+  loginDialogVisible.value = true;
+};
+
+const handleGuestLogin = async () => {
+  if (!loginForm.username.trim() || !loginForm.password.trim()) {
+    ElMessage.warning("请输入用户名和密码");
+    return;
+  }
+
+  loginLoading.value = true;
+  try {
+    const res = await request.post("/login", {
+      userType: "user3",
+      username: loginForm.username,
+      password: loginForm.password,
+    });
+
+    if (res.data.success) {
+      authStore.setAuthData(res.data.token, res.data.username, res.data.ID);
+      ElMessage.success("登录成功");
+      loginDialogVisible.value = false;
+      router.push("/user");
+    } else {
+      ElMessage.error(res.data.message || "用户名或密码错误");
+    }
+  } catch {
+    ElMessage.error("请求失败，请检查后端服务是否启动");
+  } finally {
+    loginLoading.value = false;
+  }
+};
+</script>
+
+<style scoped>
+.guest-home {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  background: #f5f7fb;
+}
+
+.sidebar {
+  flex: 0 0 260px;
+  width: 260px;
+  min-width: 260px;
+  padding: 24px 18px;
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  box-shadow: 8px 0 24px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
+}
+
+.sidebar-title {
+  margin-bottom: 20px;
+  padding: 0 12px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.menu {
+  width: 100%;
+  border-right: none;
+}
+
+.content {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: calc(100% - 260px);
+  padding: 28px;
+  box-sizing: border-box;
+}
+
+.content-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.content-title {
+  margin: 0;
+  font-size: 30px;
+  color: #111827;
+}
+
+.content-subtitle {
+  margin: 6px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.logout-btn {
+  background: #3653f8;
+  color: #fff;
+  border: none;
+}
+
+.panel {
+  min-height: 720px;
+  width: 100%;
+  padding: 20px;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+  box-sizing: border-box;
+}
+
+.panel-map {
+  padding: 0;
+  overflow: hidden;
+}
+
+.tip-content {
+  text-align: center;
+  padding: 16px 0;
+}
+
+.tip-icon {
+  margin-bottom: 16px;
+}
+
+.tip-text {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.tip-sub {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+</style>

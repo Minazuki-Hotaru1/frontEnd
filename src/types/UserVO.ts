@@ -8,4 +8,5 @@ export interface UserVO{
     appSecret: string;
     startTime: string;
     endTime: string;
+    appointmentCount: number;
 }

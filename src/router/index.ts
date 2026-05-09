@@ -15,6 +15,7 @@ import pinia from "@/stores";
 import { useAuthStore } from "@/stores/useAuthStore";
 import EnterpriseHome from "@/views/enterprise/EnterpriseHome.vue";
 import AdminUser from "@/views/admin/AdminUser.vue";
+import GuestHome from "@/views/user/GuestHome.vue";
 
 const routes = [
   { path: "/", component: LoginPage },
@@ -43,7 +44,8 @@ const routes = [
   { path: "/adminManagement", component: AdminEnterprise },
   { path: "/user", component: UserHome },
   { path: "/enterprise", component: EnterpriseHome },
-  { path: "/adminUser", component: AdminUser }
+  { path: "/adminUser", component: AdminUser },
+  { path: "/guest", component: GuestHome },
 
 ]
 

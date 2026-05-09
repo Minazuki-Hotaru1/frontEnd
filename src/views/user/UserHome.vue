@@ -43,18 +43,12 @@
         <UserMap />
       </section>
 
-      <section v-else-if="activeMenu === 'enList'" class="panel placeholder-panel">
-        <div class="placeholder-card">
-          <h3>企业列表</h3>
-          <p>该模块尚未配置。</p>
-        </div>
+      <section v-else-if="activeMenu === 'enList'" class="panel">
+        <UserEnterpriseList />
       </section>
 
-      <section v-else-if="activeMenu === 'reservation'" class="panel placeholder-panel">
-        <div class="placeholder-card">
-          <h3>我的预约</h3>
-          <p>该模块尚未配置。</p>
-        </div>
+      <section v-else-if="activeMenu === 'reservation'" class="panel">
+        <UserAppointment />
       </section>
 
       <section v-else class="panel placeholder-panel">
@@ -80,6 +74,8 @@ import {
 } from "@element-plus/icons-vue";
 import { useAuthStore } from "../../stores/useAuthStore";
 import UserMap from "./UserMap.vue";
+import UserAppointment from "./UserAppointment.vue";
+import UserEnterpriseList from "./UserEnterpriseList.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();

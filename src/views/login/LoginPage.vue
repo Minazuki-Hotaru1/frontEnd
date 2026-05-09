@@ -31,6 +31,10 @@
           <a class="register-link" plain @click="dialogFormVisible = true">点击这里注册账号</a>
         </div>
       </div>
+
+      <div class="guest-btn-wrap">
+        <el-button class="guest-btn" @click="gotoGuest">游客登录</el-button>
+      </div>
     </form>
 
     <el-dialog v-model="dialogFormVisible" title="注册为普通用户" width="500">
@@ -100,6 +104,11 @@ const buttons = [
 ]
 const goToEnRegistration = () => {
   window.open("/EnRegistration")
+}
+
+const gotoGuest = () => {
+  authStore.setGuest()
+  router.push("/guest")
 }
 
 
@@ -297,6 +306,15 @@ const userRegister = async () => {
 .register-link {
   color: #0000ff;
   cursor: pointer;
+}
+
+.guest-btn-wrap {
+  margin-top: 8px;
+  text-align: center;
+}
+
+.guest-btn {
+  width: 100%;
 }
 </style>
 

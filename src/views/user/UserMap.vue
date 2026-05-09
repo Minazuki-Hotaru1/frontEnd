@@ -147,6 +147,10 @@ import { useAuthStore } from "../../stores/useAuthStore";
 import request from "../../utils/request";
 import MapContainer from "../login/MapContainer.vue";
 
+const emit = defineEmits<{
+  (e: "guest-reserve"): void;
+}>();
+
 interface EnterpriseMapItem {
   id: string;
   enId?: string;
@@ -286,6 +290,11 @@ const getAllEnList = async () => {
 };
 
 const reserveEnterprise = async (enterpriseId: string, enterpriseTypeCode: string) => {
+  if (authStore.isGuest) {
+    emit("guest-reserve");
+    return;
+  }
+
   const userId = authStore.id;
 
   if (!userId) {

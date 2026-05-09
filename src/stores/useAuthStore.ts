@@ -4,6 +4,7 @@ interface AuthState {
   token: string | null
   username: string | null
   id: string | null
+  isGuest: boolean
 }
 
 export const useAuthStore = defineStore("auth", {
@@ -11,6 +12,7 @@ export const useAuthStore = defineStore("auth", {
     token: null,
     username: null,
     id: null,
+    isGuest: false,
   }),
 
   getters: {
@@ -22,11 +24,19 @@ export const useAuthStore = defineStore("auth", {
       this.token = token
       this.username = username
       this.id = id ?? null
+      this.isGuest = false
+    },
+    setGuest() {
+      this.token = null
+      this.username = "游客"
+      this.id = null
+      this.isGuest = true
     },
     clearAuthData() {
       this.token = null
       this.username = null
       this.id = null
+      this.isGuest = false
     },
   },
 

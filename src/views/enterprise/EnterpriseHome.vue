@@ -12,6 +12,11 @@
           <el-icon><Document /></el-icon>
           <span>用户预约记录</span>
         </el-menu-item>
+
+        <el-menu-item index="appointmentChart">
+          <el-icon><DataAnalysis /></el-icon>
+          <span>预约统计图表</span>
+        </el-menu-item>
       </el-menu>
     </aside>
 
@@ -32,6 +37,10 @@
         <EnterpriseAppointmentRecord />
       </section>
 
+      <section v-else-if="activeMenu === 'appointmentChart'" class="panel">
+        <EnterpriseChart />
+      </section>
+
       <section v-else class="panel placeholder-panel">
         <div class="placeholder-card">
           <h3>未知模块</h3>
@@ -49,10 +58,12 @@ import { ElMessage } from "element-plus";
 import {
   Document,
   Menu as IconMenu,
+  DataAnalysis,
 } from "@element-plus/icons-vue";
 import { useAuthStore } from "../../stores/useAuthStore";
 import EnterpriseAppointment from "./EnterpriseAppointment.vue";
 import EnterpriseAppointmentRecord from "./EnterpriseAppointmentRecord.vue";
+import EnterpriseChart from "./EnterpriseChart.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -64,6 +75,8 @@ const pageTitle = computed(() => {
       return "预约用户管理";
     case "appointmentRecord":
       return "用户预约记录";
+    case "appointmentChart":
+      return "预约统计图表";
     default:
       return "企业管理中心";
   }
@@ -75,6 +88,8 @@ const pageSubtitle = computed(() => {
       return "查看和管理用户的预约信息。";
     case "appointmentRecord":
       return "按时间排序查看所有预约记录及其状态。";
+    case "appointmentChart":
+      return "通过柱状图直观查看每日预约人数及各状态分布。";
     default:
       return "管理企业平台记录。";
   }
