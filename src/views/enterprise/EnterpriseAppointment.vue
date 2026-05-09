@@ -82,6 +82,21 @@
           </el-popover>
         </template>
       </el-table-column>
+      <el-table-column
+        label="操作"
+        width="120"
+        align="center"
+      >
+        <template #default="{ row }">
+          <el-button
+            type="success"
+            size="small"
+            @click="handleConfirm(row)"
+          >
+            确认到场
+          </el-button>
+        </template>
+      </el-table-column>
     </el-table>
 
     <div class="pagination-wrap">
@@ -146,6 +161,23 @@ const getAppointment = async (page = currentPage.value) => {
 const handleRemarkClick = (row: AppointmentRecord) => {
   if (!row.remarks) {
     ElMessage.info("暂无备注信息");
+  }
+};
+
+const handleConfirm = async (row: AppointmentRecord) => {
+  try {
+    const res = await request.put("/appPass", null, {
+      params: { appointmentId: row.id }
+    });
+
+    if (res.data?.success) {
+      ElMessage.success(res.data.message || "确认到场成功");
+      void getAppointment();
+    } else {
+      ElMessage.error(res.data?.message || "操作失败");
+    }
+  } catch {
+    ElMessage.error("确认到场请求失败");
   }
 };
 

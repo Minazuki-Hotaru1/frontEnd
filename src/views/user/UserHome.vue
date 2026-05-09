@@ -51,11 +51,8 @@
         <UserAppointment />
       </section>
 
-      <section v-else class="panel placeholder-panel">
-        <div class="placeholder-card">
-          <h3>个人信息</h3>
-          <p>该模块尚未配置。</p>
-        </div>
+      <section v-else class="panel">
+        <UserProfile />
       </section>
     </main>
   </div>
@@ -76,6 +73,7 @@ import { useAuthStore } from "../../stores/useAuthStore";
 import UserMap from "./UserMap.vue";
 import UserAppointment from "./UserAppointment.vue";
 import UserEnterpriseList from "./UserEnterpriseList.vue";
+import UserProfile from "./UserProfile.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();

@@ -17,6 +17,11 @@
           <el-icon><DataAnalysis /></el-icon>
           <span>预约统计图表</span>
         </el-menu-item>
+
+        <el-menu-item index="profile">
+          <el-icon><Setting /></el-icon>
+          <span>个人信息</span>
+        </el-menu-item>
       </el-menu>
     </aside>
 
@@ -41,6 +46,10 @@
         <EnterpriseChart />
       </section>
 
+      <section v-else-if="activeMenu === 'profile'" class="panel">
+        <EnterpriseProfile />
+      </section>
+
       <section v-else class="panel placeholder-panel">
         <div class="placeholder-card">
           <h3>未知模块</h3>
@@ -59,11 +68,13 @@ import {
   Document,
   Menu as IconMenu,
   DataAnalysis,
+  Setting,
 } from "@element-plus/icons-vue";
 import { useAuthStore } from "../../stores/useAuthStore";
 import EnterpriseAppointment from "./EnterpriseAppointment.vue";
 import EnterpriseAppointmentRecord from "./EnterpriseAppointmentRecord.vue";
 import EnterpriseChart from "./EnterpriseChart.vue";
+import EnterpriseProfile from "./EnterpriseProfile.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -77,6 +88,8 @@ const pageTitle = computed(() => {
       return "用户预约记录";
     case "appointmentChart":
       return "预约统计图表";
+    case "profile":
+      return "个人信息";
     default:
       return "企业管理中心";
   }
@@ -90,6 +103,8 @@ const pageSubtitle = computed(() => {
       return "按时间排序查看所有预约记录及其状态。";
     case "appointmentChart":
       return "通过柱状图直观查看每日预约人数及各状态分布。";
+    case "profile":
+      return "查看和修改企业地址信息。";
     default:
       return "管理企业平台记录。";
   }

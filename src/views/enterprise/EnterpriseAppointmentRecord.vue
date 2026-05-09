@@ -42,13 +42,10 @@
         align="center"
       >
         <template #default="{ row }">
-          <span
-            class="status-tag"
-            :class="statusClass(row.appStatus)"
-          >
-            <span class="status-dot"></span>
-            {{ statusText(row.appStatus) }}
-          </span>
+          <el-tag v-if="row.appStatus === '1'" type="warning">已预约未到场</el-tag>
+          <el-tag v-else-if="row.appStatus === '2'" type="success">已到场</el-tag>
+          <el-tag v-else-if="row.appStatus === '3'" type="danger">预约未到场</el-tag>
+          <el-tag v-else type="info">{{ row.appStatus }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column
@@ -117,20 +114,6 @@ const currentPage = ref(1);
 const pageSize = ref(10);
 const total = ref(0);
 
-const statusMap: Record<string, { text: string; class: string }> = {
-  "1": { text: "预约未到达", class: "status-pending" },
-  "2": { text: "预约已到达", class: "status-arrived" },
-  "3": { text: "已超预约时间", class: "status-expired" },
-};
-
-const statusText = (status: string | null) => {
-  return statusMap[status ?? ""]?.text ?? "未知状态";
-};
-
-const statusClass = (status: string | null) => {
-  return statusMap[status ?? ""]?.class ?? "status-unknown";
-};
-
 const getAppointment = async (page = currentPage.value) => {
   loading.value = true;
 
@@ -178,44 +161,6 @@ onMounted(() => {
   display: flex;
   justify-content: flex-end;
   margin-top: 20px;
-}
-
-.status-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  user-select: none;
-}
-
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: currentColor;
-}
-
-.status-pending {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.status-arrived {
-  background: #d1fae5;
-  color: #059669;
-}
-
-.status-expired {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.status-unknown {
-  background: #f3f4f6;
-  color: #6b7280;
 }
 
 .remark-link {

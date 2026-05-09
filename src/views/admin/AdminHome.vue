@@ -51,6 +51,11 @@
           <el-icon><Setting /></el-icon>
           <span>任务管理</span>
         </el-menu-item>
+
+        <el-menu-item index="profile">
+          <el-icon><User /></el-icon>
+          <span>个人信息</span>
+        </el-menu-item>
       </el-menu>
     </aside>
 
@@ -127,6 +132,35 @@
         </MapContainer>
       </section>
 
+      <section v-else-if="activeMenu === 'profile'" class="panel">
+        <el-descriptions v-loading="profileLoading" :column="1" border title="管理员信息">
+          <el-descriptions-item label="用户名">{{ adminProfile.username || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="上次登录时间">{{ adminProfile.loginTime || '-' }}</el-descriptions-item>
+        </el-descriptions>
+
+        <div class="edit-section">
+          <el-button type="warning" @click="adminPwdDialogVisible = true">修改密码</el-button>
+        </div>
+
+        <el-dialog v-model="adminPwdDialogVisible" title="修改密码" width="420px" :close-on-click-modal="false">
+          <el-form :model="adminPwdForm" label-width="100px">
+            <el-form-item label="原密码">
+              <el-input v-model="adminPwdForm.oldPassword" type="password" show-password placeholder="请输入原密码" />
+            </el-form-item>
+            <el-form-item label="新密码">
+              <el-input v-model="adminPwdForm.newPassword" type="password" show-password placeholder="请输入新密码" />
+            </el-form-item>
+            <el-form-item label="确认新密码">
+              <el-input v-model="adminPwdForm.confirmPassword" type="password" show-password placeholder="请再次输入新密码" />
+            </el-form-item>
+          </el-form>
+          <template #footer>
+            <el-button @click="adminPwdDialogVisible = false">取消</el-button>
+            <el-button type="primary" :loading="adminPwdSaving" @click="handleAdminPwdSave">保存</el-button>
+          </template>
+        </el-dialog>
+      </section>
+
       <section v-else class="panel placeholder-panel">
         <div class="placeholder-card">
           <h3>任务管理</h3>
@@ -138,7 +172,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElAmapMarkerCluster } from "@vuemap/vue-amap";
 import { ElMessage, ElNotification } from "element-plus";
@@ -148,6 +182,7 @@ import {
   Location,
   Menu as IconMenu,
   Setting,
+  User,
 } from "@element-plus/icons-vue";
 import { useAuthStore } from "../../stores/useAuthStore";
 import AdminPassEnterprise from "./AdminPassEnterprise.vue";
@@ -156,15 +191,24 @@ import AdminUser from "./AdminUser.vue";
 import MapContainer from "../login/MapContainer.vue";
 import request from "../../utils/request";
 import type { Address } from "../../types/Address";
-import type { User } from "../../types/User";
+import type { User as UserType } from "../../types/User";
 
 const router = useRouter();
 const authStore = useAuthStore();
 const activeMenu = ref("");
 const addressList = ref<Address[]>([]);
 const activeMarkerId = ref("");
-const userTableData = ref<User[]>([]);
+const userTableData = ref<UserType[]>([]);
 const selectedEnterpriseType = ref("all");
+const profileLoading = ref(false);
+const adminProfile = ref({ username: "", loginTime: "" });
+const adminPwdDialogVisible = ref(false);
+const adminPwdSaving = ref(false);
+const adminPwdForm = reactive({
+  oldPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+});
 const markerIconUrl = new URL(
   "../../../material/\u6807\u70b9\u3001\u5730\u70b9_2.png",
   import.meta.url,
@@ -229,6 +273,8 @@ const pageTitle = computed(() => {
       return "企业地图";
     case "map2":
       return "用户聚类地图";
+    case "profile":
+      return "个人信息";
     default:
       return "任务管理";
   }
@@ -319,6 +365,61 @@ const handleSelect = (key: string) => {
 
   if (key === "map2") {
     void getAllUser();
+  }
+
+  if (key === "profile") {
+    void fetchAdminProfile();
+  }
+};
+
+const fetchAdminProfile = async () => {
+  profileLoading.value = true;
+  try {
+    const res = await request.get("/getAdminProfile", {
+      params: { adminId: authStore.id },
+    });
+    if (res.data?.success !== false) {
+      adminProfile.value.username = res.data.username || "";
+      adminProfile.value.loginTime = res.data.loginTime || "";
+    }
+  } catch {
+    ElMessage.error("获取管理员信息失败");
+  } finally {
+    profileLoading.value = false;
+  }
+};
+
+const handleAdminPwdSave = async () => {
+  if (!adminPwdForm.oldPassword || !adminPwdForm.newPassword || !adminPwdForm.confirmPassword) {
+    ElMessage.warning("请填写完整密码信息");
+    return;
+  }
+  if (adminPwdForm.newPassword !== adminPwdForm.confirmPassword) {
+    ElMessage.warning("两次输入的新密码不一致");
+    return;
+  }
+
+  adminPwdSaving.value = true;
+  try {
+    const res = await request.put("/updateAdminPassword", {
+      adminId: authStore.id,
+      oldPassword: adminPwdForm.oldPassword,
+      newPassword: adminPwdForm.newPassword,
+    });
+
+    if (res.data?.success) {
+      ElMessage.success("密码修改成功");
+      adminPwdDialogVisible.value = false;
+      adminPwdForm.oldPassword = "";
+      adminPwdForm.newPassword = "";
+      adminPwdForm.confirmPassword = "";
+    } else {
+      ElMessage.error(res.data?.message || "修改失败");
+    }
+  } catch {
+    ElMessage.error("密码修改请求失败");
+  } finally {
+    adminPwdSaving.value = false;
   }
 };
 
@@ -558,6 +659,10 @@ onMounted(() => {
 
 .placeholder-card p {
   margin: 0;
+}
+
+.edit-section {
+  margin-top: 20px;
 }
 
 :deep(.custom-marker-card) {

@@ -28,7 +28,7 @@
       </section>
 
       <section v-else-if="activeMenu === 'enList'" class="panel">
-        <UserEnterpriseList @guest-reserve="showGuestTip" />
+        <GuestEnterpriseList @guest-reserve="showGuestTip" />
       </section>
     </main>
 
@@ -71,7 +71,7 @@ import { Document, Location, WarningFilled } from "@element-plus/icons-vue";
 import { useAuthStore } from "../../stores/useAuthStore";
 import request from "../../utils/request";
 import UserMap from "./UserMap.vue";
-import UserEnterpriseList from "./UserEnterpriseList.vue";
+import GuestEnterpriseList from "./GuestEnterpriseList.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
