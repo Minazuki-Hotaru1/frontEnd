@@ -2,8 +2,12 @@
   <div class="admin-home">
     <aside class="sidebar">
       <div class="sidebar-title">管理面板</div>
-      <el-menu :default-active="activeMenu" class="menu" @select="handleSelect">
-        <el-sub-menu index="enterprise">
+      <el-menu
+        :default-active="activeMenu"
+        class="menu"
+        @select="handleSelect"
+      >
+        <el-sub-menu index="enterprise" popper-class="sidebar-sub-menu">
           <template #title>
             <el-icon><IconMenu /></el-icon>
             <span>企业管理</span>
@@ -47,11 +51,6 @@
           </el-menu-item>
         </el-sub-menu>
 
-        <el-menu-item index="task">
-          <el-icon><Setting /></el-icon>
-          <span>任务管理</span>
-        </el-menu-item>
-
         <el-menu-item index="profile">
           <el-icon><User /></el-icon>
           <span>个人信息</span>
@@ -62,42 +61,79 @@
     <main class="content">
       <div class="content-header">
         <div>
-          <h1 class="content-title">{{ pageTitle }}</h1>
-          <p class="content-subtitle">{{ pageSubtitle }}</p>
+          <div class="content-avatar">
+            <el-icon :size="22"><UserFilled /></el-icon>
+          </div>
+          <div>
+            <h1 class="content-title">{{ pageTitle }}</h1>
+            <p class="content-subtitle">{{ pageSubtitle }}</p>
+          </div>
         </div>
-        <button class="logout-btn" type="button" @click="logout">退出登录</button>
+        <button
+          class="logout-btn"
+          type="button"
+          @click="logout"
+        >
+          退出登录
+        </button>
       </div>
 
-      <section v-if="activeMenu === 'pendingEnterpriseReview'" class="panel">
-        <AdminPassEnterprise key="pendingEnterpriseReview" review-status="pending" />
+      <section
+        v-if="activeMenu === 'pendingEnterpriseReview'"
+        class="panel"
+      >
+        <AdminPassEnterprise
+          key="pendingEnterpriseReview"
+          review-status="pending"
+        />
       </section>
 
-      <section v-else-if="activeMenu === 'reviewedEnterpriseReview'" class="panel">
-        <AdminPassEnterprise key="reviewedEnterpriseReview" review-status="reviewed" />
+      <section
+        v-else-if="activeMenu === 'reviewedEnterpriseReview'"
+        class="panel"
+      >
+        <AdminPassEnterprise
+          key="reviewedEnterpriseReview"
+          review-status="reviewed"
+        />
       </section>
 
-      <section v-else-if="activeMenu === 'adminEnterprise'" class="panel">
+      <section
+        v-else-if="activeMenu === 'adminEnterprise'"
+        class="panel"
+      >
         <AdminEnterprise />
       </section>
 
-      <section v-else-if="activeMenu === 'userInformation'" class="panel">
+      <section
+        v-else-if="activeMenu === 'userInformation'"
+        class="panel"
+      >
         <AdminUser />
       </section>
 
-      <section v-else-if="activeMenu === 'map1'" class="panel panel-map">
+      <section
+        v-else-if="activeMenu === 'map1'"
+        class="panel panel-map"
+      >
         <div class="map-filter-bar">
           <button
             v-for="type in enterpriseTypeOptions"
             :key="type.value"
             type="button"
             class="type-filter-btn"
-            :class="[type.className, { active: selectedEnterpriseType === type.value }]"
+            :class="[
+              type.className,
+              { active: selectedEnterpriseType === type.value },
+            ]"
             @click="selectedEnterpriseType = type.value"
           >
             <span class="type-dot"></span>
             <span>{{ type.label }}</span>
           </button>
-          <span class="filter-count">{{ filteredAddressList.length }} / {{ addressList.length }}</span>
+          <span class="filter-count"
+            >{{ filteredAddressList.length }} / {{ addressList.length }}</span
+          >
         </div>
 
         <MapContainer>
@@ -116,7 +152,10 @@
         </MapContainer>
       </section>
 
-      <section v-else-if="activeMenu === 'map2'" class="panel panel-map">
+      <section
+        v-else-if="activeMenu === 'map2'"
+        class="panel panel-map"
+      >
         <MapContainer>
           <ElAmapMarkerCluster
             v-if="clusterPoints.length"
@@ -128,44 +167,86 @@
             :render-cluster-marker="renderClusterMarker"
             :render-marker="renderMarker"
           />
-          <div v-else class="map-empty">暂无聚类数据</div>
+          <div
+            v-else
+            class="map-empty"
+          >
+            暂无聚类数据
+          </div>
         </MapContainer>
       </section>
 
-      <section v-else-if="activeMenu === 'profile'" class="panel">
-        <el-descriptions v-loading="profileLoading" :column="1" border title="管理员信息">
-          <el-descriptions-item label="用户名">{{ adminProfile.username || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="上次登录时间">{{ adminProfile.loginTime || '-' }}</el-descriptions-item>
+      <section
+        v-else-if="activeMenu === 'profile'"
+        class="panel"
+      >
+        <el-descriptions
+          v-loading="profileLoading"
+          :column="1"
+          border
+          title="管理员信息"
+        >
+          <el-descriptions-item label="用户名">{{
+            adminProfile.username || "-"
+          }}</el-descriptions-item>
+          <el-descriptions-item label="上次登录时间">{{
+            adminProfile.loginTime || "-"
+          }}</el-descriptions-item>
         </el-descriptions>
 
         <div class="edit-section">
-          <el-button type="warning" @click="adminPwdDialogVisible = true">修改密码</el-button>
+          <el-button
+            type="warning"
+            @click="adminPwdDialogVisible = true"
+            >修改密码</el-button
+          >
         </div>
 
-        <el-dialog v-model="adminPwdDialogVisible" title="修改密码" width="420px" :close-on-click-modal="false">
-          <el-form :model="adminPwdForm" label-width="100px">
+        <el-dialog
+          v-model="adminPwdDialogVisible"
+          title="修改密码"
+          width="420px"
+          :close-on-click-modal="false"
+        >
+          <el-form
+            :model="adminPwdForm"
+            label-width="100px"
+          >
             <el-form-item label="原密码">
-              <el-input v-model="adminPwdForm.oldPassword" type="password" show-password placeholder="请输入原密码" />
+              <el-input
+                v-model="adminPwdForm.oldPassword"
+                type="password"
+                show-password
+                placeholder="请输入原密码"
+              />
             </el-form-item>
             <el-form-item label="新密码">
-              <el-input v-model="adminPwdForm.newPassword" type="password" show-password placeholder="请输入新密码" />
+              <el-input
+                v-model="adminPwdForm.newPassword"
+                type="password"
+                show-password
+                placeholder="请输入新密码"
+              />
             </el-form-item>
             <el-form-item label="确认新密码">
-              <el-input v-model="adminPwdForm.confirmPassword" type="password" show-password placeholder="请再次输入新密码" />
+              <el-input
+                v-model="adminPwdForm.confirmPassword"
+                type="password"
+                show-password
+                placeholder="请再次输入新密码"
+              />
             </el-form-item>
           </el-form>
           <template #footer>
             <el-button @click="adminPwdDialogVisible = false">取消</el-button>
-            <el-button type="primary" :loading="adminPwdSaving" @click="handleAdminPwdSave">保存</el-button>
+            <el-button
+              type="primary"
+              :loading="adminPwdSaving"
+              @click="handleAdminPwdSave"
+              >保存</el-button
+            >
           </template>
         </el-dialog>
-      </section>
-
-      <section v-else class="panel placeholder-panel">
-        <div class="placeholder-card">
-          <h3>任务管理</h3>
-          <p>该模块尚未配置。</p>
-        </div>
       </section>
     </main>
   </div>
@@ -183,6 +264,7 @@ import {
   Menu as IconMenu,
   Setting,
   User,
+  UserFilled,
 } from "@element-plus/icons-vue";
 import { useAuthStore } from "../../stores/useAuthStore";
 import AdminPassEnterprise from "./AdminPassEnterprise.vue";
@@ -242,7 +324,9 @@ const filteredAddressList = computed(() => {
     return addressList.value;
   }
 
-  return addressList.value.filter((item) => item.typeName === selectedEnterpriseType.value);
+  return addressList.value.filter(
+    (item) => item.typeName === selectedEnterpriseType.value,
+  );
 });
 
 const clusterPoints = computed(() =>
@@ -303,7 +387,8 @@ const logout = () => {
 
 const buildMarkerContent = (item: Address) => {
   const typeName = item.typeName || TYPE_OTHER;
-  const typeClass = enterpriseTypeClassMap[typeName] || enterpriseTypeClassMap[TYPE_OTHER];
+  const typeClass =
+    enterpriseTypeClassMap[typeName] || enterpriseTypeClassMap[TYPE_OTHER];
   const enterpriseName = escapeHtml(item.enterpriseName || "未知企业");
   const safeId = escapeHtml(item.id);
   const safeTypeName = escapeHtml(typeName);
@@ -390,7 +475,11 @@ const fetchAdminProfile = async () => {
 };
 
 const handleAdminPwdSave = async () => {
-  if (!adminPwdForm.oldPassword || !adminPwdForm.newPassword || !adminPwdForm.confirmPassword) {
+  if (
+    !adminPwdForm.oldPassword ||
+    !adminPwdForm.newPassword ||
+    !adminPwdForm.confirmPassword
+  ) {
     ElMessage.warning("请填写完整密码信息");
     return;
   }
@@ -473,38 +562,72 @@ onMounted(() => {
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  background: #f5f7fb;
+  background: #E5EDF1;
 }
 
 .sidebar {
   flex: 0 0 260px;
   width: 260px;
   min-width: 260px;
-  padding: 24px 18px;
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
-  box-shadow: 8px 0 24px rgba(15, 23, 42, 0.04);
+  padding: 0;
+  background: #FFFFFF;
+  border-right: 1px solid #E5EDF1;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .sidebar-title {
-  margin-bottom: 20px;
-  padding: 0 12px;
-  font-size: 24px;
-  font-weight: 700;
-  color: #111827;
+  margin: 0;
+  padding: 28px 24px 20px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #2c3e50;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #E5EDF1;
 }
 
 .menu {
   width: 100%;
   border-right: none;
+  background: transparent;
+  padding: 12px 0;
+}
+
+.menu :deep(.el-menu-item),
+.menu :deep(.el-sub-menu__title) {
+  margin: 4px 12px;
+  border-radius: 10px;
+  height: 44px;
+  line-height: 44px;
+  color: #5a6f7e;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.menu :deep(.el-menu-item:hover),
+.menu :deep(.el-sub-menu__title:hover) {
+  background: #E5EDF1;
+  color: #2c3e50;
+}
+
+.menu :deep(.el-menu-item.is-active) {
+  background: #96C2DB;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.menu :deep(.el-sub-menu) {
+  background: transparent;
 }
 
 .content {
   flex: 1 1 auto;
   min-width: 0;
   width: calc(100% - 260px);
-  padding: 28px;
+  padding: 28px 32px;
   box-sizing: border-box;
 }
 
@@ -513,38 +636,69 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding: 20px 24px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(44, 62, 80, 0.06);
+}
+
+.content-header > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.content-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #96C2DB, #7BAEC8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
 }
 
 .content-title {
   margin: 0;
-  font-size: 30px;
-  color: #111827;
+  font-size: 22px;
+  color: #2c3e50;
+  font-weight: 800;
 }
 
 .content-subtitle {
-  margin: 6px 0 0;
-  color: #6b7280;
-  font-size: 14px;
+  margin: 2px 0 0;
+  color: #7a8b9a;
+  font-size: 13px;
 }
 
 .logout-btn {
-  padding: 10px 18px;
+  padding: 10px 20px;
   border: none;
   border-radius: 10px;
-  background: #3653f8;
-  color: #fff;
+  background: #96C2DB;
+  color: #FFFFFF;
   cursor: pointer;
   font-weight: 600;
+  font-size: 13px;
+  box-shadow: 0 4px 14px rgba(150, 194, 219, 0.3);
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #7BAEC8;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(150, 194, 219, 0.4);
 }
 
 .panel {
   min-height: 720px;
   width: 100%;
-  padding: 20px;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+  padding: 24px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 12px rgba(44, 62, 80, 0.06);
   box-sizing: border-box;
 }
 
@@ -832,5 +986,41 @@ onMounted(() => {
   background-repeat: no-repeat;
   background-size: contain;
   filter: drop-shadow(0 6px 14px rgba(37, 99, 235, 0.24));
+}
+</style>
+
+<style>
+.sidebar-sub-menu,
+.sidebar-sub-menu .el-menu--popup {
+  background: #FFFFFF !important;
+  border: 1px solid #E5EDF1 !important;
+  border-radius: 10px !important;
+  padding: 4px 0 !important;
+  box-shadow: 0 8px 24px rgba(44, 62, 80, 0.12) !important;
+}
+
+.sidebar-sub-menu .el-menu--popup .el-menu-item,
+.sidebar-sub-menu .el-menu-item {
+  margin: 2px 6px;
+  border-radius: 8px;
+  height: 40px;
+  line-height: 40px;
+  color: #5a6f7e !important;
+  background: transparent !important;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.sidebar-sub-menu .el-menu--popup .el-menu-item:hover,
+.sidebar-sub-menu .el-menu-item:hover {
+  background: #E5EDF1 !important;
+  color: #2c3e50 !important;
+}
+
+.sidebar-sub-menu .el-menu--popup .el-menu-item.is-active,
+.sidebar-sub-menu .el-menu-item.is-active {
+  background: #96C2DB !important;
+  color: #FFFFFF !important;
+  font-weight: 700;
 }
 </style>

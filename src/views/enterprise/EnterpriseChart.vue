@@ -45,6 +45,7 @@ onMounted(async () => {
   let status1: number[] = [];
   let status2: number[] = [];
   let status3: number[] = [];
+  let status4: number[] = [];
 
   try {
     const res = await request.get("/getAppointmentChart", {
@@ -56,6 +57,7 @@ onMounted(async () => {
     status1 = data.status1 ?? [];
     status2 = data.status2 ?? [];
     status3 = data.status3 ?? [];
+    status4 = data.status4 ?? [];
 
     if (dates.length === 0) {
       noData.value = true;
@@ -81,7 +83,7 @@ onMounted(async () => {
       axisPointer: { type: "shadow" },
     },
     legend: {
-      data: ["已预约未到场", "已到场", "预约未到场"],
+      data: ["已预约未到场", "已到场", "预约未到场", "已离开"],
       top: 10,
     },
     grid: {
@@ -138,6 +140,18 @@ onMounted(async () => {
         stack: "total",
         data: status3,
         itemStyle: { color: "#f56c6c" },
+        label: {
+          show: true,
+          fontSize: 12,
+          color: "#606266",
+        },
+      },
+      {
+        name: "已离开",
+        type: "bar",
+        stack: "total",
+        data: status4,
+        itemStyle: { color: "#409eff" },
         label: {
           show: true,
           fontSize: 12,

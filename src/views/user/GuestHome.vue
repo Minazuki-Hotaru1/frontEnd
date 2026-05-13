@@ -17,8 +17,13 @@
     <main class="content">
       <div class="content-header">
         <div>
-          <h1 class="content-title">{{ pageTitle }}</h1>
-          <p class="content-subtitle">{{ pageSubtitle }}</p>
+          <div class="content-avatar">
+            <el-icon :size="22"><View /></el-icon>
+          </div>
+          <div>
+            <h1 class="content-title">{{ pageTitle }}</h1>
+            <p class="content-subtitle">{{ pageSubtitle }}</p>
+          </div>
         </div>
         <el-button class="logout-btn" type="primary" @click="goLogin">返回登录</el-button>
       </div>
@@ -67,7 +72,7 @@
 import { computed, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
-import { Document, Location, WarningFilled } from "@element-plus/icons-vue";
+import { Document, Location, WarningFilled, View } from "@element-plus/icons-vue";
 import { useAuthStore } from "../../stores/useAuthStore";
 import request from "../../utils/request";
 import UserMap from "./UserMap.vue";
@@ -158,38 +163,66 @@ const handleGuestLogin = async () => {
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  background: #f5f7fb;
+  background: #E5EDF1;
 }
 
 .sidebar {
   flex: 0 0 260px;
   width: 260px;
   min-width: 260px;
-  padding: 24px 18px;
-  background: #ffffff;
-  border-right: 1px solid #e5e7eb;
-  box-shadow: 8px 0 24px rgba(15, 23, 42, 0.04);
+  padding: 0;
+  background: #FFFFFF;
+  border-right: 1px solid #E5EDF1;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .sidebar-title {
-  margin-bottom: 20px;
-  padding: 0 12px;
-  font-size: 24px;
-  font-weight: 700;
-  color: #111827;
+  margin: 0;
+  padding: 28px 24px 20px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #2c3e50;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #E5EDF1;
 }
 
 .menu {
   width: 100%;
   border-right: none;
+  background: transparent;
+  padding: 12px 0;
+}
+
+.menu :deep(.el-menu-item) {
+  margin: 4px 12px;
+  border-radius: 10px;
+  height: 44px;
+  line-height: 44px;
+  color: #5a6f7e;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.menu :deep(.el-menu-item:hover) {
+  background: #E5EDF1;
+  color: #2c3e50;
+}
+
+.menu :deep(.el-menu-item.is-active) {
+  background: #96C2DB;
+  color: #FFFFFF;
+  font-weight: 700;
 }
 
 .content {
   flex: 1 1 auto;
   min-width: 0;
   width: calc(100% - 260px);
-  padding: 28px;
+  padding: 28px 32px;
   box-sizing: border-box;
 }
 
@@ -198,34 +231,67 @@ const handleGuestLogin = async () => {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding: 20px 24px;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(44, 62, 80, 0.06);
+}
+
+.content-header > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.content-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #96C2DB, #7BAEC8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
 }
 
 .content-title {
   margin: 0;
-  font-size: 30px;
-  color: #111827;
+  font-size: 22px;
+  color: #2c3e50;
+  font-weight: 800;
 }
 
 .content-subtitle {
-  margin: 6px 0 0;
-  color: #6b7280;
-  font-size: 14px;
+  margin: 2px 0 0;
+  color: #7a8b9a;
+  font-size: 13px;
 }
 
 .logout-btn {
-  background: #3653f8;
-  color: #fff;
+  padding: 10px 20px;
   border: none;
+  border-radius: 10px;
+  background: #96C2DB;
+  color: #FFFFFF;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: 0 4px 14px rgba(150, 194, 219, 0.3);
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #7BAEC8;
 }
 
 .panel {
   min-height: 720px;
   width: 100%;
-  padding: 20px;
-  border-radius: 8px;
-  background: #ffffff;
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.08);
+  padding: 24px;
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 12px rgba(44, 62, 80, 0.06);
   box-sizing: border-box;
 }
 
@@ -247,12 +313,12 @@ const handleGuestLogin = async () => {
   margin: 0 0 8px;
   font-size: 16px;
   font-weight: 600;
-  color: #1f2937;
+  color: #2c3e50;
 }
 
 .tip-sub {
   margin: 0;
   font-size: 14px;
-  color: #6b7280;
+  color: #7a8b9a;
 }
 </style>

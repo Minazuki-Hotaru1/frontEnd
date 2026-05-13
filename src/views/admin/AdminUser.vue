@@ -50,6 +50,7 @@
             <el-tag v-if="row.appStatus === '1'" type="warning">已预约未到场</el-tag>
             <el-tag v-else-if="row.appStatus === '2'" type="success">已到场</el-tag>
             <el-tag v-else-if="row.appStatus === '3'" type="danger">预约未到场</el-tag>
+            <el-tag v-else-if="row.appStatus === '4'" effect="dark" type="primary">已离开</el-tag>
             <el-tag v-else type="info">{{ row.appStatus }}</el-tag>
           </template>
         </el-table-column>

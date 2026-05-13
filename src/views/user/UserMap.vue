@@ -619,27 +619,27 @@ onUnmounted(() => {
 }
 
 .type-all {
-  color: #475569;
+  color: #5a6f7e;
 }
 
 .type-hospital {
-  color: #dc2626;
+  color: #6BA5C7;
 }
 
 .type-parking {
-  color: #2563eb;
+  color: #96C2DB;
 }
 
 .type-park {
-  color: #16a34a;
+  color: #7BAEC8;
 }
 
 .type-charging {
-  color: #0891b2;
+  color: #89B8D4;
 }
 
 .type-other {
-  color: #7c3aed;
+  color: #8DBCD5;
 }
 
 .filter-count {
