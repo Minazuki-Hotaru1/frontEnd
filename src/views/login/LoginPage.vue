@@ -9,16 +9,26 @@
     <div class="login-card">
       <div class="card-header">
         <div class="logo-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="36" height="36">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            width="36"
+            height="36"
+          >
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
         </div>
         <h2 class="card-title">城市服务预约平台</h2>
         <p class="card-subtitle">City Service Reservation Platform</p>
       </div>
 
-      <el-form class="login-form" @submit.prevent="handleSubmit">
+      <el-form
+        class="login-form"
+        @submit.prevent="handleSubmit"
+      >
         <el-form-item>
           <el-select
             v-model="form.region"
@@ -26,15 +36,24 @@
             size="large"
             style="width: 100%"
           >
-            <el-option label="管理员" value="user1">
+            <el-option
+              label="管理员"
+              value="user1"
+            >
               <span class="role-option">管理员</span>
               <span class="role-desc">系统管理</span>
             </el-option>
-            <el-option label="企业用户" value="user2">
+            <el-option
+              label="企业用户"
+              value="user2"
+            >
               <span class="role-option">企业用户</span>
               <span class="role-desc">服务提供方</span>
             </el-option>
-            <el-option label="普通用户" value="user3">
+            <el-option
+              label="普通用户"
+              value="user3"
+            >
               <span class="role-option">普通用户</span>
               <span class="role-desc">服务使用者</span>
             </el-option>
@@ -76,15 +95,27 @@
       </el-form>
 
       <div class="login-links">
-        <el-button link type="primary" @click="dialogFormVisible = true">
+        <el-button
+          link
+          type="primary"
+          @click="dialogFormVisible = true"
+        >
           注册普通用户
         </el-button>
         <el-divider direction="vertical" />
-        <el-button link type="primary" @click="goToEnRegistration">
+        <el-button
+          link
+          type="primary"
+          @click="goToEnRegistration"
+        >
           注册企业用户
         </el-button>
         <el-divider direction="vertical" />
-        <el-button link type="primary" @click="gotoGuest">
+        <el-button
+          link
+          type="primary"
+          @click="gotoGuest"
+        >
           游客登录
         </el-button>
       </div>
@@ -97,118 +128,159 @@
       width="480px"
       :close-on-click-modal="false"
     >
-      <el-form :model="form" label-width="80px">
+      <el-form
+        :model="form"
+        label-width="80px"
+      >
         <el-form-item label="用户名">
-          <el-input v-model="form.username" placeholder="请输入用户名" />
+          <el-input
+            v-model="form.username"
+            placeholder="请输入用户名"
+          />
         </el-form-item>
         <el-form-item label="密码">
-          <el-input v-model="form.password" type="password" placeholder="请输入密码" show-password />
+          <el-input
+            v-model="form.password"
+            type="password"
+            placeholder="请输入密码"
+            show-password
+          />
         </el-form-item>
         <el-form-item label="详细地址">
-          <el-input v-model="form.address" placeholder="请输入真实的具体住址" />
+          <el-input
+            v-model="form.address"
+            placeholder="请输入真实的具体住址"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogFormVisible = false">关闭</el-button>
-        <el-button type="primary" @click="userRegister" :loading="regLoading">确认注册</el-button>
+        <el-button
+          type="primary"
+          @click="userRegister"
+          :loading="regLoading"
+          >确认注册</el-button
+        >
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from "vue"
-import { ElMessage } from "element-plus"
-import { User, Lock } from "@element-plus/icons-vue"
-import { useRouter } from "vue-router"
-import { useAuthStore } from '../../stores/useAuthStore'
-import request from "../../utils/request"
+import { reactive, ref } from "vue";
+import { ElMessage } from "element-plus";
+import { User, Lock } from "@element-plus/icons-vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../../stores/useAuthStore";
+import request from "../../utils/request";
 
-const username = ref("")
-const password = ref("")
-const loginLoading = ref(false)
-const regLoading = ref(false)
-const router = useRouter()
-const authStore = useAuthStore()
-const dialogFormVisible = ref(false)
+const username = ref("");
+const password = ref("");
+const loginLoading = ref(false);
+const regLoading = ref(false);
+const router = useRouter();
+const authStore = useAuthStore();
+const dialogFormVisible = ref(false);
 
 const form = reactive({
   region: "",
-  username: '',
-  password: '',
-  address: ''
-})
+  username: "",
+  password: "",
+  address: "",
+});
 
 const goToEnRegistration = () => {
-  window.open("/EnRegistration")
-}
+  window.open("/EnRegistration");
+};
 
 const gotoGuest = () => {
-  authStore.setGuest()
-  router.push("/guest")
-}
+  authStore.setGuest();
+  router.push("/guest");
+};
 
 const handleSubmit = async () => {
   if (username.value.trim() === "" || password.value.trim() === "") {
-    ElMessage.error("请输入账号和密码")
-    return
+    ElMessage.error("请输入账号和密码");
+    return;
   }
   if (form.region === "") {
-    ElMessage.error("请选择登录角色")
-    return
+    ElMessage.error("请选择登录角色");
+    return;
   }
 
-  loginLoading.value = true
+  loginLoading.value = true;
   try {
     const res = await request.post("/login", {
       userType: form.region,
       username: username.value,
       password: password.value,
-    })
+    });
 
     if (res.data.success) {
-      authStore.setAuthData(res.data.token, res.data.username, res.data.ID)
-      ElMessage.success("登录成功")
+      authStore.setAuthData(
+        res.data.token,
+        res.data.username,
+        res.data.ID,
+        res.data.displayName,
+      );
+      console.log(res.data.displayName + "------" + res.data.username);
+
+      ElMessage.success("登录成功");
       switch (form.region) {
-        case 'user1': router.push("/admin"); return
-        case 'user2': router.push("/enterprise"); return
-        case 'user3': router.push("/user"); return
+        case "user1":
+          router.push("/admin");
+          return;
+        case "user2":
+          router.push("/enterprise");
+          return;
+        case "user3":
+          router.push("/user");
+          return;
       }
     }
 
-    ElMessage.error(res.data.message || "用户名或密码错误")
+    ElMessage.error(res.data.message || "用户名或密码错误");
   } catch {
-    ElMessage.error("请求失败，请检查后端服务是否启动")
+    ElMessage.error("请求失败，请检查后端服务是否启动");
   } finally {
-    loginLoading.value = false
+    loginLoading.value = false;
   }
-}
+};
 
 const userRegister = async () => {
-  if (!form.username.trim()) { ElMessage.error("请输入用户名"); return }
-  if (!form.password.trim()) { ElMessage.error("请输入密码"); return }
-  if (!form.address.trim()) { ElMessage.error("请输入地址信息"); return }
+  if (!form.username.trim()) {
+    ElMessage.error("请输入用户名");
+    return;
+  }
+  if (!form.password.trim()) {
+    ElMessage.error("请输入密码");
+    return;
+  }
+  if (!form.address.trim()) {
+    ElMessage.error("请输入地址信息");
+    return;
+  }
 
-  regLoading.value = true
+  regLoading.value = true;
   try {
     const res = await request.post("/userRegister", {
       username: form.username,
       password: form.password,
       address: form.address,
-    })
+    });
 
     if (res.data.success) {
-      ElMessage.success(res.data.message)
-      dialogFormVisible.value = false
+      ElMessage.success(res.data.message);
+      dialogFormVisible.value = false;
     } else {
-      ElMessage.error(res.data.message)
+      ElMessage.error(res.data.message);
     }
   } catch {
-    ElMessage.error("注册失败，请检查后端接口")
+    ElMessage.error("注册失败，请检查后端接口");
   } finally {
-    regLoading.value = false
+    regLoading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>
@@ -224,7 +296,7 @@ const userRegister = async () => {
 .login-bg {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #96C2DB 0%, #7BAEC8 40%, #E5EDF1 100%);
+  background: linear-gradient(135deg, #96c2db 0%, #7baec8 40%, #e5edf1 100%);
   overflow: hidden;
 }
 
@@ -282,8 +354,8 @@ const userRegister = async () => {
   height: 64px;
   margin-bottom: 16px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #96C2DB, #7BAEC8);
-  color: #FFFFFF;
+  background: linear-gradient(135deg, #96c2db, #7baec8);
+  color: #ffffff;
   box-shadow: 0 12px 30px rgba(150, 194, 219, 0.35);
 }
 
@@ -316,13 +388,13 @@ const userRegister = async () => {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 4px;
-  background: linear-gradient(135deg, #96C2DB, #7BAEC8);
+  background: linear-gradient(135deg, #96c2db, #7baec8);
   border: none;
   box-shadow: 0 8px 24px rgba(150, 194, 219, 0.4);
 }
 
 .login-btn:hover {
-  background: linear-gradient(135deg, #7BAEC8, #6BA5C7);
+  background: linear-gradient(135deg, #7baec8, #6ba5c7);
   box-shadow: 0 12px 30px rgba(150, 194, 219, 0.5);
   transform: translateY(-1px);
 }

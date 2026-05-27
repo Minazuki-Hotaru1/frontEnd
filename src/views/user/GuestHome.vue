@@ -16,16 +16,15 @@
 
     <main class="content">
       <div class="content-header">
-        <div>
+        <div class="header-left">
           <div class="content-avatar">
             <el-icon :size="22"><View /></el-icon>
           </div>
-          <div>
-            <h1 class="content-title">{{ pageTitle }}</h1>
-            <p class="content-subtitle">{{ pageSubtitle }}</p>
-          </div>
+          <span class="header-welcome">欢迎 游客 用户</span>
         </div>
-        <el-button class="logout-btn" type="primary" @click="goLogin">返回登录</el-button>
+        <div class="header-actions">
+          <el-button type="primary" plain size="default" @click="goLogin">返回登录</el-button>
+        </div>
       </div>
 
       <section v-if="activeMenu === 'enMap'" class="panel panel-map">
@@ -227,62 +226,47 @@ const handleGuestLogin = async () => {
 }
 
 .content-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 24px;
-  padding: 20px 24px;
+  padding: 16px 24px;
   background: #FFFFFF;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(44, 62, 80, 0.06);
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 4px 16px rgba(44, 62, 80, 0.08);
 }
 
-.content-header > div:first-child {
+.header-left {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
+.header-welcome {
+  font-size: 17px;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .content-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   background: linear-gradient(135deg, #96C2DB, #7BAEC8);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #FFFFFF;
-}
-
-.content-title {
-  margin: 0;
-  font-size: 22px;
-  color: #2c3e50;
-  font-weight: 800;
-}
-
-.content-subtitle {
-  margin: 2px 0 0;
-  color: #7a8b9a;
-  font-size: 13px;
-}
-
-.logout-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  background: #96C2DB;
-  color: #FFFFFF;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 13px;
-  box-shadow: 0 4px 14px rgba(150, 194, 219, 0.3);
-  transition: all 0.2s ease;
-}
-
-.logout-btn:hover {
-  background: #7BAEC8;
 }
 
 .panel {
